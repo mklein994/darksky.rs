@@ -40,7 +40,7 @@ pub enum Icon {
 
 map_names! { Icon;
     ClearDay, "clear-day";
-    ClearNight, "Clear-night";
+    ClearNight, "clear-night";
     Cloudy, "cloudy";
     Fog, "fog";
     Hail, "hail";
