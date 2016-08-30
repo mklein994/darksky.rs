@@ -50,9 +50,16 @@ mod tests {
     #[test]
     fn get_forecast() {
         let token = ::std::env::var("FORECAST_TOKEN").expect("forecast token");
-        if let Err(why) = ::get_forecast(token,
+
+        if let Err(why) = ::get_forecast(&token[..],
                                          37.8267,
                                          -122.423) {
+            panic!("{:?}", why);
+        }
+
+        if let Err(why) = ::get_forecast(&token[..],
+                                         39.9042,
+                                         116.4074) {
             panic!("{:?}", why);
         }
     }

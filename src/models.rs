@@ -264,7 +264,7 @@ pub struct Forecast {
     pub hourly: Hourly,
     pub latitude: f64,
     pub longitude: f64,
-    pub minutely: Minutely,
+    pub minutely: Option<Minutely>,
     pub offset: f64,
     pub timezone: String,
 }
@@ -282,7 +282,7 @@ impl Forecast {
             hourly: try!(remove(&mut value, "hourly").and_then(Hourly::decode)),
             latitude: req!(try!(remove(&mut value, "latitude")).as_f64()),
             longitude: req!(try!(remove(&mut value, "longitude")).as_f64()),
-            minutely: try!(remove(&mut value, "minutely").and_then(Minutely::decode)),
+            minutely: try!(opt(&mut value, "minutely", Minutely::decode)),
             offset: req!(try!(remove(&mut value, "offset")).as_f64()),
             timezone: try!(remove(&mut value, "timezone").and_then(into_string)),
         })
@@ -324,7 +324,7 @@ pub struct HourlyData {
     pub summary: String,
     pub temperature: f64,
     pub time: u64,
-    pub visibility: f64,
+    pub visibility: Option<f64>,
     pub wind_bearing: f64,
     pub wind_speed: f64,
 }
@@ -348,7 +348,7 @@ impl HourlyData {
             summary: try!(remove(&mut value, "summary").and_then(into_string)),
             temperature: req!(try!(remove(&mut value, "temperature")).as_f64()),
             time: req!(try!(remove(&mut value, "time")).as_u64()),
-            visibility: req!(try!(remove(&mut value, "visibility")).as_f64()),
+            visibility: remove(&mut value, "visibility").ok().and_then(|v| v.as_f64()),
             wind_bearing: req!(try!(remove(&mut value, "windBearing")).as_f64()),
             wind_speed: req!(try!(remove(&mut value, "windSpeed")).as_f64()),
         })
