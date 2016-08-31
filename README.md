@@ -18,7 +18,7 @@ An unofficial Rust wrapper for the [forecast.io](https://forecast.io) API.
 Add the following dependency to your Cargo.toml:
 
 ```toml
-forecast_io = "0.2"
+forecast_io = "0.3"
 ```
 
 And include it in your project:

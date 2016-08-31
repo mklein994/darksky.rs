@@ -9,6 +9,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 
+## [0.3.0] - 2016-08-30
+
+### Added
+
+### Changed
+
+- Structs have been replaced with near-fully-optional datapoints and
+datablocks.
+
+
 ## [0.2.0] - 2016-08-29
 
 ### Added
@@ -35,5 +45,6 @@ Initial commit.
 
 
 [Unreleased]: https://github.com/zeyla/forecast.io.rs/compare/v0.1.0...HEAD
+[0.3.0]: https://github.com/zeyla/forecast.io.rs/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/zeyla/forecast.io.rs/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/zeyla/forecast.io.rs/compare/v0.1.0...v0.1.1
