@@ -19,6 +19,33 @@ use std::collections::BTreeMap;
 use ::error::{Error, Result};
 
 #[macro_escape]
+macro_rules! field {
+    ($map:expr, float, $key:expr) => {
+        remove(&mut $map, $key).ok().and_then(|v| v.as_f64())
+    };
+
+    ($map:expr, R, float, $key:expr) => {
+        req!(try!(remove(&mut $map, $key)).as_f64())
+    };
+
+    ($map:expr, int, $key:expr) => {
+        remove(&mut $map, $key).ok().and_then(|v| v.as_u64())
+    };
+
+    ($map:expr, R, int, $key:expr) => {
+        req!(try!(remove(&mut $map, $key)).as_u64())
+    };
+
+    ($map:expr, O, $key:expr, $decode:path) => {
+        try!(opt(&mut $map, $key, $decode))
+    };
+
+    ($map:expr, R, $key:expr, $decode:path) => {
+        try!(remove(&mut $map, $key).and_then($decode))
+    };
+}
+
+#[macro_escape]
 macro_rules! req {
     ($opt:expr) => {
         try!($opt.ok_or(Error::Decode(concat!("Type mismatch in model:",

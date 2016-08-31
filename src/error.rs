@@ -74,8 +74,7 @@ impl StdError for Error {
 			Error::Hyper(ref inner) => inner.description(),
 			Error::Json(ref inner) => inner.description(),
 			Error::Io(ref inner) => inner.description(),
-			Error::Decode(msg, _) => msg,
-			Error::Other(msg) => msg,
+			Error::Decode(msg, _) | Error::Other(msg) => msg,
 		}
 	}
 

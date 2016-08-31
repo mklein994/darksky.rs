@@ -90,135 +90,123 @@ impl Alert {
 }
 
 #[derive(Clone, Debug)]
-pub struct Current {
-    pub apparent_temperature: f64,
-    pub cloud_cover: f64,
-    pub dew_point: f64,
-    pub humidity: f64,
-    pub icon: Icon,
-    pub nearest_storm_bearing: Option<u64>,
-    pub nearest_storm_distance: Option<u64>,
-    pub ozone: f64,
-    pub precip_intensity: u64,
-    pub precip_probability: u64,
-    pub pressure: f64,
-    pub summary: String,
-    pub temperature: f64,
-    pub time: u64,
-    pub visibility: Option<f64>,
-    pub wind_bearing: u64,
-    pub wind_speed: f64,
+pub struct Datablock {
+    pub data: Option<Vec<Datapoint>>,
+    pub icon: Option<Icon>,
+    pub summary: Option<String>,
 }
 
-impl Current {
+impl Datablock {
     #[doc(hidden)]
-    pub fn decode(value: Value) -> Result<Current> {
+    pub fn decode(value: Value) -> Result<Datablock> {
         let mut value = try!(into_map(value));
 
-        Ok(Current {
-            apparent_temperature: req!(try!(remove(&mut value, "apparentTemperature")).as_f64()),
-            cloud_cover: req!(try!(remove(&mut value, "cloudCover")).as_f64()),
-            dew_point: req!(try!(remove(&mut value, "dewPoint")).as_f64()),
-            humidity: req!(try!(remove(&mut value, "humidity")).as_f64()),
-            icon: try!(remove(&mut value, "icon").and_then(Icon::decode)),
-            nearest_storm_bearing: remove(&mut value, "nearestStormBearing").ok().and_then(|v| v.as_u64()),
-            nearest_storm_distance: remove(&mut value, "nearestStormDistance").ok().and_then(|v| v.as_u64()),
-            ozone: req!(try!(remove(&mut value, "ozone")).as_f64()),
-            precip_intensity: req!(try!(remove(&mut value, "precipIntensity")).as_u64()),
-            precip_probability: req!(try!(remove(&mut value, "precipProbability")).as_u64()),
-            pressure: req!(try!(remove(&mut value, "pressure")).as_f64()),
-            summary: try!(remove(&mut value, "summary").and_then(into_string)),
-            temperature: req!(try!(remove(&mut value, "temperature")).as_f64()),
-            time: req!(try!(remove(&mut value, "time")).as_u64()),
-            visibility: remove(&mut value, "visibility").ok().and_then(|v| v.as_f64()),
-            wind_bearing: req!(try!(remove(&mut value, "windBearing")).as_u64()),
-            wind_speed: req!(try!(remove(&mut value, "windSpeed")).as_f64()),
+        Ok(Datablock {
+            data: try!(opt(&mut value, "data", |v| decode_array(v, Datapoint::decode))),
+            icon: try!(opt(&mut value, "icon", Icon::decode)),
+            summary: try!(opt(&mut value, "summary", into_string)),
         })
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct Daily {
-    pub data: Vec<DailyData>,
-    pub icon: Icon,
-    pub summary: String,
-}
-
-impl Daily {
-    #[doc(hidden)]
-    pub fn decode(value: Value) -> Result<Daily> {
-        let mut value = try!(into_map(value));
-
-        Ok(Daily {
-            data: try!(decode_array(try!(remove(&mut value, "data")), DailyData::decode)),
-            icon: try!(remove(&mut value, "icon").and_then(Icon::decode)),
-            summary: try!(remove(&mut value, "summary").and_then(into_string)),
-        })
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct DailyData {
-    pub apparent_temperature_max_time: u64,
-    pub apparent_temperature_max: f64,
-    pub apparent_temperature_min_time: u64,
-    pub apparent_temperature_min: f64,
-    pub cloud_cover: f64,
-    pub dew_point: f64,
-    pub humidity: f64,
-    pub icon: Icon,
-    pub moon_phase: f64,
-    pub ozone: f64,
-    pub precip_intensity_max: f64,
-    pub precip_intensity: f64,
-    pub precip_probability: f64,
+pub struct Datapoint {
+    pub apparent_temperature_max_time: Option<u64>,
+    pub apparent_temperature_max: Option<f64>,
+    pub apparent_temperature_min_time: Option<u64>,
+    pub apparent_temperature_min: Option<f64>,
+    pub cloud_cover_error: Option<String>,
+    pub cloud_cover: Option<f64>,
+    pub dew_point_error: Option<String>,
+    pub dew_point: Option<f64>,
+    pub humidity_error: Option<String>,
+    pub humidity: Option<f64>,
+    pub icon: Option<Icon>,
+    pub moon_phase: Option<f64>,
+    pub ozone_error: Option<String>,
+    pub ozone: Option<f64>,
+    pub precip_accumulation_error: Option<String>,
+    pub precip_accumulation: Option<f64>,
+    pub precip_intensity_error: Option<String>,
+    pub precip_intensity_max_error: Option<String>,
+    pub precip_intensity_max_time: Option<u64>,
+    pub precip_intensity_max: Option<f64>,
+    pub precip_intensity: Option<f64>,
+    pub precip_probability_error: Option<String>,
+    pub precip_probability: Option<f64>,
     pub precip_type: Option<PrecipitationType>,
-    pub pressure: f64,
-    pub summary: String,
-    pub sunrise_time: u64,
-    pub sunset_time: u64,
-    pub temperature_max_time: u64,
-    pub temperature_max: f64,
-    pub temperature_min_time: u64,
-    pub temperature_min: f64,
+    pub pressure_error: Option<String>,
+    pub pressure: Option<f64>,
+    pub summary: Option<String>,
+    pub sunrise_time: Option<u64>,
+    pub sunset_time: Option<u64>,
+    pub temperature_max_error: Option<String>,
+    pub temperature_max_time: Option<u64>,
+    pub temperature_max: Option<f64>,
+    pub temperature_min_error: Option<String>,
+    pub temperature_min_time: Option<u64>,
+    pub temperature_min: Option<f64>,
+    pub temperature_error: Option<f64>,
+    pub temperature: Option<f64>,
     pub time: u64,
+    pub visibility_error: Option<String>,
     pub visibility: Option<f64>,
-    pub wind_bearing: f64,
-    pub wind_speed: f64,
+    pub wind_bearing_error: Option<String>,
+    pub wind_bearing: Option<f64>,
+    pub wind_speed_error: Option<String>,
+    pub wind_speed: Option<f64>,
 }
 
-impl DailyData {
+impl Datapoint {
     #[doc(hidden)]
-    pub fn decode(value: Value) -> Result<DailyData> {
-        let mut value = try!(into_map(value));
+    pub fn decode(value: Value) -> Result<Datapoint> {
+        let mut map = try!(into_map(value));
 
-        Ok(DailyData {
-            apparent_temperature_max_time: req!(try!(remove(&mut value, "apparentTemperatureMaxTime")).as_u64()),
-            apparent_temperature_max: req!(try!(remove(&mut value, "apparentTemperatureMax")).as_f64()),
-            apparent_temperature_min_time: req!(try!(remove(&mut value, "apparentTemperatureMinTime")).as_u64()),
-            apparent_temperature_min: req!(try!(remove(&mut value, "apparentTemperatureMin")).as_f64()),
-            cloud_cover: req!(try!(remove(&mut value, "cloudCover")).as_f64()),
-            dew_point: req!(try!(remove(&mut value, "dewPoint")).as_f64()),
-            humidity: req!(try!(remove(&mut value, "humidity")).as_f64()),
-            icon: try!(remove(&mut value, "icon").and_then(Icon::decode)),
-            moon_phase: req!(try!(remove(&mut value, "moonPhase")).as_f64()),
-            ozone: req!(try!(remove(&mut value, "ozone")).as_f64()),
-            precip_intensity_max: req!(try!(remove(&mut value, "precipIntensityMax")).as_f64()),
-            precip_intensity: req!(try!(remove(&mut value, "precipIntensity")).as_f64()),
-            precip_probability: req!(try!(remove(&mut value, "precipProbability")).as_f64()),
-            precip_type: try!(opt(&mut value, "precipType", PrecipitationType::decode)),
-            pressure: req!(try!(remove(&mut value, "pressure")).as_f64()),
-            summary: try!(remove(&mut value, "summary").and_then(into_string)),
-            sunrise_time: req!(try!(remove(&mut value, "sunriseTime")).as_u64()),
-            sunset_time: req!(try!(remove(&mut value, "sunsetTime")).as_u64()),
-            temperature_max_time: req!(try!(remove(&mut value, "temperatureMaxTime")).as_u64()),
-            temperature_max: req!(try!(remove(&mut value, "temperatureMax")).as_f64()),
-            temperature_min_time: req!(try!(remove(&mut value, "temperatureMinTime")).as_u64()),
-            temperature_min: req!(try!(remove(&mut value, "temperatureMin")).as_f64()),
-            time: req!(try!(remove(&mut value, "time")).as_u64()),
-            visibility: remove(&mut value, "visibility").ok().and_then(|v| v.as_f64()),
-            wind_bearing: req!(try!(remove(&mut value, "windBearing")).as_f64()),
-            wind_speed: req!(try!(remove(&mut value, "windSpeed")).as_f64()),
+        Ok(Datapoint {
+            apparent_temperature_max_time: field!(map, int, "apparentTemperatureMaxTime"),
+            apparent_temperature_max: field!(map, float, "apparentTemperatureMax"),
+            apparent_temperature_min_time: field!(map, int, "apparentTemperatureMinTime"),
+            apparent_temperature_min: field!(map, float, "apparentTemperatureMin"),
+            cloud_cover_error: field!(map, O, "cloudCoverError", into_string),
+            cloud_cover: field!(map, float, "cloudCover"),
+            dew_point_error: field!(map, O, "dewPointError", into_string),
+            dew_point: field!(map, float, "dewPoint"),
+            humidity_error: field!(map, O, "humidity_error", into_string),
+            humidity: field!(map, float, "humidity"),
+            icon: field!(map, O, "icon", Icon::decode),
+            moon_phase: field!(map, float, "moonPhase"),
+            ozone_error: field!(map, O, "ozoneError", into_string),
+            ozone: field!(map, float, "ozone"),
+            precip_accumulation_error: field!(map, O, "precipAccumulationError", into_string),
+            precip_accumulation: field!(map, float, "precipAccumulation"),
+            precip_intensity_error: field!(map, O, "precipIntensityError", into_string),
+            precip_intensity_max_error: field!(map, O, "precipIntensityMaxError", into_string),
+            precip_intensity_max_time: field!(map, int, "precipIntensityMaxTime"),
+            precip_intensity_max: field!(map, float, "precipIntensityMax"),
+            precip_intensity: field!(map, float, "precipIntensity"),
+            precip_probability_error: field!(map, O, "precipProbabilityError", into_string),
+            precip_probability: field!(map, float, "precipProbability"),
+            precip_type: field!(map, O, "precipType", PrecipitationType::decode),
+            pressure_error: field!(map, O, "pressureError", into_string),
+            pressure: field!(map, float, "pressure"),
+            summary: field!(map, O, "summary", into_string),
+            sunrise_time: field!(map, int, "sunriseTime"),
+            sunset_time: field!(map, int, "sunsetTime"),
+            temperature_error: field!(map, float, "temperatureError"),
+            temperature_max_error: field!(map, O, "temperatureMaxError", into_string),
+            temperature_max_time: field!(map, int, "temperatureMaxTime"),
+            temperature_max: field!(map, float, "temperatureMax"),
+            temperature_min_error: field!(map, O, "temperatureMinError", into_string),
+            temperature_min_time: field!(map, int, "temperatureMinTime"),
+            temperature_min: field!(map, float, "temperatureMin"),
+            temperature: field!(map, float, "temperature"),
+            time: field!(map, R, int, "time"),
+            visibility_error: field!(map, O, "visibilityError", into_string),
+            visibility: field!(map, float, "visibility"),
+            wind_bearing_error: field!(map, O, "windBearingError", into_string),
+            wind_bearing: field!(map, float, "windBearing"),
+            wind_speed_error: field!(map, O, "windSpeedError", into_string),
+            wind_speed: field!(map, float, "windSpeed"),
         })
     }
 }
@@ -258,139 +246,33 @@ impl Flags {
 #[derive(Clone, Debug)]
 pub struct Forecast {
     pub alerts: Vec<Alert>,
-    pub currently: Current,
-    pub daily: Daily,
-    pub flags: Flags,
-    pub hourly: Hourly,
+    pub currently: Option<Datapoint>,
+    pub daily: Option<Datablock>,
+    pub flags: Option<Flags>,
+    pub hourly: Option<Datablock>,
     pub latitude: f64,
     pub longitude: f64,
-    pub minutely: Option<Minutely>,
-    pub offset: f64,
+    pub minutely: Option<Datablock>,
+    pub offset: Option<f64>,
     pub timezone: String,
 }
 
 impl Forecast {
     #[doc(hidden)]
     pub fn decode(value: Value) -> Result<Forecast> {
-        let mut value = try!(into_map(value));
+        let mut map = try!(into_map(value));
 
         Ok(Forecast {
-            alerts: try!(opt(&mut value, "alerts", |v| decode_array(v, Alert::decode))).unwrap_or(vec![]),
-            currently: try!(remove(&mut value, "currently").and_then(Current::decode)),
-            daily: try!(remove(&mut value, "daily").and_then(Daily::decode)),
-            flags: try!(remove(&mut value, "flags").and_then(Flags::decode)),
-            hourly: try!(remove(&mut value, "hourly").and_then(Hourly::decode)),
-            latitude: req!(try!(remove(&mut value, "latitude")).as_f64()),
-            longitude: req!(try!(remove(&mut value, "longitude")).as_f64()),
-            minutely: try!(opt(&mut value, "minutely", Minutely::decode)),
-            offset: req!(try!(remove(&mut value, "offset")).as_f64()),
-            timezone: try!(remove(&mut value, "timezone").and_then(into_string)),
-        })
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct Hourly {
-    pub data: Vec<HourlyData>,
-    pub icon: Icon,
-    pub summary: String,
-}
-
-impl Hourly {
-    #[doc(hidden)]
-    pub fn decode(value: Value) -> Result<Hourly> {
-        let mut value = try!(into_map(value));
-
-        Ok(Hourly {
-            data: try!(decode_array(try!(remove(&mut value, "data")), HourlyData::decode)),
-            icon: try!(remove(&mut value, "icon").and_then(Icon::decode)),
-            summary: try!(remove(&mut value, "summary").and_then(into_string)),
-        })
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct HourlyData {
-    pub apparent_temperature: f64,
-    pub cloud_cover: f64,
-    pub dew_point: f64,
-    pub humidity: f64,
-    pub icon: Icon,
-    pub ozone: f64,
-    pub precip_intensity: f64,
-    pub precip_probability: f64,
-    pub precip_type: Option<PrecipitationType>,
-    pub pressure: f64,
-    pub summary: String,
-    pub temperature: f64,
-    pub time: u64,
-    pub visibility: Option<f64>,
-    pub wind_bearing: f64,
-    pub wind_speed: f64,
-}
-
-impl HourlyData {
-    #[doc(hidden)]
-    pub fn decode(value: Value) -> Result<HourlyData> {
-        let mut value = try!(into_map(value));
-
-        Ok(HourlyData {
-            apparent_temperature: req!(try!(remove(&mut value, "apparentTemperature")).as_f64()),
-            cloud_cover: req!(try!(remove(&mut value, "cloudCover")).as_f64()),
-            dew_point: req!(try!(remove(&mut value, "dewPoint")).as_f64()),
-            humidity: req!(try!(remove(&mut value, "humidity")).as_f64()),
-            icon: try!(remove(&mut value, "icon").and_then(Icon::decode)),
-            ozone: req!(try!(remove(&mut value, "ozone")).as_f64()),
-            precip_intensity: req!(try!(remove(&mut value, "precipIntensity")).as_f64()),
-            precip_probability: req!(try!(remove(&mut value, "precipProbability")).as_f64()),
-            precip_type: try!(opt(&mut value, "precipType", PrecipitationType::decode)),
-            pressure: req!(try!(remove(&mut value, "pressure")).as_f64()),
-            summary: try!(remove(&mut value, "summary").and_then(into_string)),
-            temperature: req!(try!(remove(&mut value, "temperature")).as_f64()),
-            time: req!(try!(remove(&mut value, "time")).as_u64()),
-            visibility: remove(&mut value, "visibility").ok().and_then(|v| v.as_f64()),
-            wind_bearing: req!(try!(remove(&mut value, "windBearing")).as_f64()),
-            wind_speed: req!(try!(remove(&mut value, "windSpeed")).as_f64()),
-        })
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct Minutely {
-    pub data: Vec<MinutelyData>,
-    pub icon: Icon,
-    pub summary: String,
-}
-
-impl Minutely {
-    #[doc(hidden)]
-    pub fn decode(value: Value) -> Result<Minutely> {
-        let mut value = try!(into_map(value));
-
-        Ok(Minutely {
-            data: try!(decode_array(try!(remove(&mut value, "data")), MinutelyData::decode)),
-            icon: try!(remove(&mut value, "icon").and_then(Icon::decode)),
-            summary: try!(remove(&mut value, "summary").and_then(into_string)),
-        })
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct MinutelyData {
-    pub precip_intensity: f64,
-    pub precip_probability: f64,
-    pub time: u64,
-}
-
-impl MinutelyData {
-    #[doc(hidden)]
-    pub fn decode(value: Value) -> Result<MinutelyData> {
-        let mut value = try!(into_map(value));
-
-        Ok(MinutelyData {
-            precip_intensity: req!(try!(remove(&mut value, "precipIntensity")).as_f64()),
-            precip_probability: req!(try!(remove(&mut value, "precipProbability")).as_f64()),
-            time: req!(try!(remove(&mut value, "time")).as_u64()),
+            alerts: try!(opt(&mut map, "alerts", |v| decode_array(v, Alert::decode))).unwrap_or(vec![]),
+            currently: field!(map, O, "currently", Datapoint::decode),
+            daily: field!(map, O, "daily", Datablock::decode),
+            flags: field!(map, O, "flags", Flags::decode),
+            hourly: field!(map, O, "hourly", Datablock::decode),
+            latitude: field!(map, R, float, "latitude"),
+            longitude: field!(map, R, float, "longitude"),
+            minutely: field!(map, O, "minutely", Datablock::decode),
+            offset: field!(map, float, "offset"),
+            timezone: field!(map, R, "timezone", into_string),
         })
     }
 }
