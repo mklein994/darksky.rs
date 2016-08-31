@@ -62,5 +62,11 @@ mod tests {
                                          116.4074) {
             panic!("{:?}", why);
         }
+
+        if let Err(why) = ::get_forecast(&token[..],
+                                         19.2465,
+                                         -99.1013) {
+            panic!("{:?}", why);
+        }
     }
 }
