@@ -1,14 +1,20 @@
 [package]
 authors = ["Austin Hellyer <hello@austinhellyer.me>"]
-description = "An unofficial Rust wrapper for the forecast.io API."
-documentation = "https://docs.austinhellyer.me/forecast_io/"
-homepage = "https://github.com/zeyla/forecast.io.rs"
+description = "An unofficial Rust wrapper for the darksky.net API."
+documentation = "https://docs.austinhellyer.me/darksky.rs/latest/darksky/"
+homepage = "https://github.com/zeyla/darksky.rs"
 license = "ISC"
-keywords = ["api", "forecast", "forecast_io", "weather"]
-name = "forecast_io"
+keywords = [
+    "api",
+    "dark",
+    "darksky",
+    "sky",
+    "weather",
+]
+name = "darksky"
 readme = "README.md"
-repository = "https://github.com/zeyla/forecast.io.rs.git"
-version = "0.4.0"
+repository = "https://github.com/zeyla/darksky.rs.git"
+version = "0.5.0"
 
 [dependencies]
 hyper = "0.9"

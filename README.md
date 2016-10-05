@@ -1,5 +1,5 @@
-[travis-badge]: https://img.shields.io/travis/zeyla/forecast.io.rs.svg?style=flat-square
-[travis]: https://travis-ci.org/zeyla/forecast.io.rs
+[travis-badge]: https://img.shields.io/travis/zeyla/darksky.rs.svg?style=flat-square
+[travis]: https://travis-ci.org/zeyla/darksky.rs
 [license-badge]: https://img.shields.io/badge/license-ISC-blue.svg?style=flat-square
 [license]: https://opensource.org/licenses/ISC
 [docs-badge]: https://img.shields.io/badge/docs-online-2020ff.svg?style=flat-square
@@ -8,9 +8,13 @@
 [![travis-badge][]][travis] [![license-badge][]][license] [![docs-badge][]][docs]
 
 
-# forecast.io.rs
+# darksky.rs
 
-An unofficial Rust wrapper for the [forecast.io](https://forecast.io) API.
+An unofficial Rust wrapper for the [DarkSky] API.
+
+**Note**: This package was previously named "forecast_io". Due to a
+[change in name], this package has been renamed to "darksky", and can be found
+on [crates.io] by the same name.
 
 
 ### Installation
@@ -18,18 +22,21 @@ An unofficial Rust wrapper for the [forecast.io](https://forecast.io) API.
 Add the following dependency to your Cargo.toml:
 
 ```toml
-forecast_io = "0.3"
+darksky = "0.5"
 ```
 
 And include it in your project:
 
 ```rust
-extern crate forecast_io;
+extern crate darksky;
 ```
 
 ### License
 
-License info in [LICENSE.md]. Long story short, ISC.
+License info can be found in the [LICENSE.md] file. Long story short, ISC.
 
-[examples]: https://github.com/zeyla/forecast.io.rs/tree/master/examples
-[LICENSE.md]: https://github.com/zeyla/forecast.io.rs/blob/master/LICENSE.md
+[change in name]: http://status.darksky.net/2016/09/20/forecast-api-is-now-dark-sky-api.html
+[crates.io]: https://crates.io/crates/darksky
+[examples]: https://github.com/zeyla/darksky.rs/tree/master/examples
+[DarkSky]: https://darksky.net
+[LICENSE.md]: https://github.com/zeyla/darksky.rs/blob/master/LICENSE.md

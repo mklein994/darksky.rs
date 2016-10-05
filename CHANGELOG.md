@@ -8,6 +8,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+## [0.5.0] - 2016-10-04
+
+### Changed
+
+- Internal API endpoint changed to reflect forecast.io name's change to DarkSky;
+- Package name changed to "darksky".
 
 ## [0.4.0] - 2016-09-13
 
@@ -56,8 +62,9 @@ data;
 Initial commit.
 
 
-[Unreleased]: https://github.com/zeyla/forecast.io.rs/compare/v0.4.0...HEAD
-[0.4.0]: https://github.com/zeyla/forecast.io.rs/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/zeyla/forecast.io.rs/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/zeyla/forecast.io.rs/compare/v0.1.1...v0.2.0
-[0.1.1]: https://github.com/zeyla/forecast.io.rs/compare/v0.1.0...v0.1.1
+[Unreleased]: https://github.com/zeyla/darksky.rs/compare/v0.4.0...HEAD
+[0.5.0]: https://github.com/zeyla/darksky.rs/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/zeyla/darksky.rs/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/zeyla/darksky.rs/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/zeyla/darksky.rs/compare/v0.1.1...v0.2.0
+[0.1.1]: https://github.com/zeyla/darksky.rs/compare/v0.1.0...v0.1.1
