@@ -37,6 +37,6 @@ License info can be found in the [LICENSE.md] file. Long story short, ISC.
 
 [change in name]: http://status.darksky.net/2016/09/20/forecast-api-is-now-dark-sky-api.html
 [crates.io]: https://crates.io/crates/darksky
-[examples]: https://github.com/zeyla/darksky.rs/tree/master/examples
+[examples]: https://gitlab.com/kalasi/darksky.rs/tree/master/examples
 [DarkSky]: https://darksky.net
-[LICENSE.md]: https://github.com/zeyla/darksky.rs/blob/master/LICENSE.md
+[LICENSE.md]: https://gitlab.com/kalasi/darksky.rs/blob/master/LICENSE.md
