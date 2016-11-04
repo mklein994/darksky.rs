@@ -12,14 +12,14 @@
 
 An unofficial Rust wrapper for the [DarkSky] API.
 
-**Note**: This package was previously named "forecast_io". Due to a
-[change in name], this package has been renamed to "darksky", and can be found
+**Note**: This package was previously named `forecast_io`. Due to a
+[change in name], this package has been renamed to `darksky`, and can be found
 on [crates.io] by the same name.
 
 
 ### Installation
 
-Add the following dependency to your Cargo.toml:
+Add the following dependency to your `Cargo.toml`:
 
 ```toml
 darksky = "0.5"

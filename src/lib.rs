@@ -13,6 +13,64 @@
 // RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 // CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 // CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+//! An unofficial Rust wrapper for the [DarkSky] API.
+//!
+//! While this documentation tries to stay as up-to-date as possible, refer to
+//! the [official documentation][docs] for the latest, sanctioned information.
+//!
+//! See the [developer portal][devportal] to sign up and obtain your token.
+//!
+//! DarkSky has a status page [here][status] if you need to check its uptime.
+//!
+//! **Note**: This package was previously named `forecast_io`. Due to a
+//! [change in name], this package has been renamed to `darksky`, and can be
+//! found on [crates.io] by the same name.
+//!
+//! ### Installation
+//!
+//! Add the following dependency to your `Cargo.toml`:
+//!
+//! ```toml
+//! darksky = "0.5"
+//! ```
+//!
+//! And include it in your project:
+//!
+//! ```rust
+//! extern crate darksky;
+//! ```
+//!
+//! ### Examples
+//!
+//! Retrieve a [forecast][`Forecast`] for the given latitude and longitude:
+//!
+//! ```rust
+//! use darksky::Block;
+//! use std::env;
+//!
+//! let token = env::var("FORECAST_TOKEN").expect("forecast token");
+//! let lat = 37.8267;
+//! let long = -122.423;
+//!
+//! let req = darksky::get_forecast(&token, lat, long);
+//!
+//! let _forecast = match req {
+//!     Ok(forecast) => forecast,
+//!     Err(why) => {
+//!         println!("Error getting forecast: {:?}", why);
+//!
+//!         return;
+//!     },
+//! };
+//! ```
+//!
+//! [`Forecast`]: struct.Forecast.html
+//! [DarkSky]: https://darksky.net
+//! [change in name]: http://status.darksky.net/2016/09/20/forecast-api-is-now-dark-sky-api.html
+//! [crates.io]: https://crates.io
+//! [devportal]: https://darksky.net/dev
+//! [docs]: https://darksky.net/dev/docs
+//! [status]: http://status.darksky.net
 
 extern crate hyper;
 extern crate serde_json;
@@ -33,8 +91,10 @@ use utils::into_string;
 
 static API_URL: &'static str = "https://api.darksky.net";
 
-/// A block is a name of a `Datablock` returned from the API. This can be used
+/// A block is a name of a [`Datablock`] returned from the API. This can be used
 /// to exclude datablocks from being returned from the API, to reduce bandwidth.
+///
+/// [`Datablock`]: struct.Datablock.html
 pub enum Block {
     Currently,
     Daily,
@@ -51,9 +111,13 @@ map_names! { Block;
     Minutely, "minutely";
 }
 
-/// The language to return from the API for the "summary" field.
+/// The language to return from the API for the [`summary`] field.
 ///
-/// The language is automatically English, so specifying English is not needed.
+/// The language is automatically [English][`Language::En`], so specifying
+/// English is not required.
+///
+/// [`Language::En`]: #variant.En
+/// [`summary`]: struct.Datapoint.html#structfield.summary
 pub enum Language {
     /// Arabic
     Ar,
@@ -150,17 +214,38 @@ map_names! { Language;
     ZhTw, "zh-tw";
 }
 
-/// The type of units that the API should send back. `Auto` is the default
-/// value, and does not need to be specified in that case.
+/// The type of units that the API should send back. `us` is the default value,
+/// and does not need to be specified in that case.
 ///
-/// The values are explained under "Options" and then "units=[setting]":
+/// The values are explained under `Options` and then `units=[setting]` in the
+/// [documentation][docs].
 ///
-/// <https://darksky.net/dev/docs>
+/// Used in conjunction with the [`Options::unit`] method, which is a builder
+/// for an argument of [`get_forecast_with_options`].
+///
+/// [`Options::unit`]: struct.Options.html#method.unit
+/// [`get_forecast_with_options`]: fn.get_forecast_with_options.html
+/// [docs]: https://darksky.net/dev/docs/forecast
 pub enum Unit {
+    /// Automatically select units based on geographic location.
     Auto,
+    /// Same as [Si][`Unit::Si`], except that [`wind_speed`] is in kilometers
+    /// per hour.
+    ///
+    /// [`wind_speed`]: struct.Datapoint.html#structfield.wind_speed
+    /// [`Unit::Si`]: #variant.Si
     Ca,
+    /// Imperial units (the default).
     Si,
+    /// Same as [Si][`Unit::Si`], except that [`nearest_storm_distance`] and
+    /// [`visibility`] are in miles and [`wind_speed`] is in miles per hour.
+    ///
+    /// [`nearest_storm_distance`]: struct.Datapoint.html#structfield.nearest_storm_distance
+    /// [`visibility`]: struct.Datapoint.html#structfield.visibility
+    /// [`wind_speed`]: struct.Datapoint.html#structfield.wind_speed
+    /// [`Unit::Si`]: #variant.Si
     Uk2,
+    /// SI units.
     Us,
 }
 
@@ -172,14 +257,30 @@ map_names! { Unit;
     Us, "us";
 }
 
-/// Build a list of options to send in the request, including the type of units
-/// that the API should send back, the blocks to exclude, whether to extend the
-/// hourly forecast, and the language for the summary.
+/// Build a list of options to send in the request, including the type of
+/// [unit][`Unit`]s that the API should return, the [block][`Block`]s to
+/// exclude, whether to [extend the hourly][`Options::extend_hourly`]
+/// [forecast][`Forecast`], and the [language][`Language`] for the
+/// [summary][`Datapoint::summary`].
+///
+/// Refer to the documentation for [`get_forecast_with_options`] on how to use
+/// this.
+///
+/// [`Block`]: enum.Block.html
+/// [`Datapoint::summary`]: struct.Datapoint.html#structfield.summary
+/// [`Forecast`]: struct.Forecast.html
+/// [`Language`]: enum.Language.html
+/// [`Options::extend_hourly`]: struct.Options.html#method.extend_hourly
+/// [`Unit`]: enum.Unit.html
+/// [`get_forecast_with_options`]: fn.get_forecast_with_options.html
 pub struct Options(HashMap<String, String>);
 
 impl Options {
-    /// Set the list of datablocks to exclude. For a full list of potential
-    /// datablocks to exclude, refer to `Block`.
+    /// Set the list of [`Datablock`]s to exclude. For a full list of potential
+    /// datablocks to exclude, refer to [`Block`].
+    ///
+    /// [`Block`]: enum.Block.html
+    /// [`Datablock`]: struct.Datablock.html
     pub fn exclude(mut self, blocks: Vec<Block>) -> Self {
         let block_names: Vec<&str> = blocks.iter()
             .map(|block| block.name())
@@ -192,25 +293,30 @@ impl Options {
         self
     }
 
-    /// Extends the hourly forecast to the full 7 days ahead, rather than only
-    /// the first 2 days.
+    /// Extends the hourly [forecast][`Forecast`] to the full `7` days ahead,
+    /// rather than only the first `2` days.
+    ///
+    /// [`Forecast`]: struct.Forecast.html
     pub fn extend_hourly(mut self) -> Self {
         self.0.insert("extend".to_owned(), "hourly".to_owned());
 
         self
     }
 
-    /// Set the language of the summary provided.
+    /// Set the language of the [`summary`] provided.
+    ///
+    /// [`summary`]: struct.Datapoint.html#structfield.summary
     pub fn language(mut self, language: Language) -> Self {
         self.0.insert("lang".to_owned(), language.name().to_owned());
 
         self
     }
 
-    /// Sets the unit type returned from the API. Refer to the forecast.io
-    /// documentation for more info:
+    /// Sets the unit type returned from the API. Refer to the
+    /// [DarkSky documentation][docs] or the [`Unit`] docs for more info.
     ///
-    /// <https://darksky.net/dev/docs>
+    /// [`Unit`]: enum.Unit.html
+    /// [docs]: https://darksky.net/dev/docs
     pub fn unit(mut self, unit: Unit) -> Self {
         self.0.insert("units".to_owned(), unit.name().to_owned());
 
@@ -218,13 +324,37 @@ impl Options {
     }
 }
 
-pub fn get_forecast<S: Into<String>>(token: S,
-                                     latitude: f64,
-                                     longitude: f64) -> Result<Forecast> {
+/// Retrieve a [forecast][`Forecast`] for the given latitude and longitude.
+///
+/// # Examples
+///
+/// ```rust
+/// use darksky::Block;
+/// use std::env;
+///
+/// let token = env::var("FORECAST_TOKEN").expect("forecast token");
+/// let lat = 37.8267;
+/// let long = -122.423;
+///
+/// let req = darksky::get_forecast(&token, lat, long);
+///
+/// let _forecast = match req {
+///     Ok(forecast) => forecast,
+///     Err(why) => {
+///         println!("Error getting forecast: {:?}", why);
+///
+///         return;
+///     },
+/// };
+/// ```
+///
+/// [`Forecast`]: struct.Forecast.html
+pub fn get_forecast(token: &str, latitude: f64, longitude: f64)
+    -> Result<Forecast> {
     let response = try!(Client::new()
         .get(&format!("{}/forecast/{}/{},{}?units=auto",
                       API_URL,
-                      token.into(),
+                      token,
                       latitude,
                       longitude))
         .send());
@@ -232,13 +362,46 @@ pub fn get_forecast<S: Into<String>>(token: S,
     Forecast::decode(try!(serde_json::from_reader(response)))
 }
 
-pub fn get_forecast_with_options<S, F>(token: S,
-                                       latitude: f64,
-                                       longitude: f64,
-                                       options: F)
-                                       -> Result<Forecast>
-                                       where F: FnOnce(Options) -> Options,
-                                             S: Into<String> {
+/// Retrieve a [forecast][`Forecast`] for the given latitude and longitude,
+/// setting options where needed. For a full list of options, refer to the
+/// documentation for the [`Options`] builder.
+///
+/// # Examples
+///
+/// Retrieve an extended forecast, excluding the
+/// [minutely block][`Block::Minutely`].
+///
+/// ```rust
+/// use darksky::Block;
+/// use std::env;
+///
+/// let token = env::var("FORECAST_TOKEN").expect("forecast token");
+/// let lat = 37.8267;
+/// let long = -122.423;
+///
+/// let req = darksky::get_forecast_with_options(&token, lat, long, |o| o
+///     .exclude(vec![Block::Minutely])
+///     .extend_hourly());
+///
+/// let _forecast = match req {
+///     Ok(forecast) => forecast,
+///     Err(why) => {
+///         println!("Error getting forecast: {:?}", why);
+///
+///         return;
+///     },
+/// };
+/// ```
+///
+/// [`Block::Minutely`]: enum.Block.html#variant.Minutely
+/// [`Forecast`]: struct.Forecast.html
+/// [`Options`]: struct.Options.html
+pub fn get_forecast_with_options<F>(token: &str,
+                                    latitude: f64,
+                                    longitude: f64,
+                                    options: F)
+                                    -> Result<Forecast>
+                                    where F: FnOnce(Options) -> Options {
     let items: Vec<String> = options(Options(HashMap::new()))
         .0
         .iter()
@@ -248,7 +411,7 @@ pub fn get_forecast_with_options<S, F>(token: S,
     let response = try!(Client::new()
         .get(&format!("{}/forecast/{}/{},{}?{}",
                       API_URL,
-                      token.into(),
+                      token,
                       latitude,
                       longitude,
                       built))

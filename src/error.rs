@@ -14,38 +14,42 @@
 // CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 // CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-use std::io::Error as IoError;
+use hyper::Error as HyperError;
+use serde_json::{Error as JsonError, Value};
 use std::error::Error as StdError;
 use std::fmt::Display;
-use hyper::Error as HyperError;
-use serde_json::Error as JsonError;
-use serde_json::Value;
+use std::io::Error as IoError;
+use std::result::Result as StdResult;
 
-pub type Result<T> = ::std::result::Result<T, Error>;
+/// A generic result type for all public-facing functions within the library.
+pub type Result<T> = StdResult<T, Error>;
 
+/// Common result type for the library's [`Result`] type. Includes errors for
+/// JSON decoding, Io errors, etc.
+///
+/// [`Result`]: type.Result.html
 #[derive(Debug)]
 pub enum Error {
+	/// A json decoding error, with a description and the value. This occurs
+	/// when the received value type is not of the expected type.
+	Decode(&'static str, Value),
 	/// A `hyper` crate error
 	Hyper(HyperError),
 	/// A `serde_json` crate error
 	Json(JsonError),
 	/// A `std::io` module error
 	Io(IoError),
-	/// A json decoding error, with a description and the offending value
-	Decode(&'static str, Value),
-	/// A miscellaneous error, with a description
-	Other(&'static str),
-}
-
-impl From<IoError> for Error {
-	fn from(err: IoError) -> Error {
-		Error::Io(err)
-	}
 }
 
 impl From<HyperError> for Error {
 	fn from(err: HyperError) -> Error {
 		Error::Hyper(err)
+	}
+}
+
+impl From<IoError> for Error {
+	fn from(err: IoError) -> Error {
+		Error::Io(err)
 	}
 }
 
@@ -61,8 +65,6 @@ impl Display for Error {
 			Error::Hyper(ref inner) => inner.fmt(f),
 			Error::Json(ref inner) => inner.fmt(f),
 			Error::Io(ref inner) => inner.fmt(f),
-			#[cfg(feature="voice")]
-			Error::Opus(ref inner) => inner.fmt(f),
 			_ => f.write_str(self.description()),
 		}
 	}
@@ -71,10 +73,10 @@ impl Display for Error {
 impl StdError for Error {
 	fn description(&self) -> &str {
 		match *self {
+			Error::Decode(msg, _) => msg,
 			Error::Hyper(ref inner) => inner.description(),
 			Error::Json(ref inner) => inner.description(),
 			Error::Io(ref inner) => inner.description(),
-			Error::Decode(msg, _) | Error::Other(msg) => msg,
 		}
 	}
 

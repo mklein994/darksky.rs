@@ -18,23 +18,35 @@ use serde_json::Value;
 use ::error::{Error, Result};
 use ::utils::*;
 
+/// A safe representation of the indicated weather. This is useful for matching
+/// and presenting an emoji or other weather symbol or representation.
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, Ord, PartialOrd)]
 pub enum Icon {
+    /// The day's sky is clear.
     ClearDay,
+    /// The night sky is clear.
     ClearNight,
+    /// The sky is cloudy.
     Cloudy,
+    /// It is foggy.
     Fog,
     /// Not actively in use
     Hail,
+    /// The day's sky is partly cloudy.
     PartlyCloudyDay,
+    /// The night's sky is partly night.
     PartlyCloudyNight,
+    /// The weather is rain.
     Rain,
+    /// The weather is sleet.
     Sleet,
+    /// The weather is snow.
     Snow,
     /// Not actively in use
     Thunderstorm,
     /// Not actively in use
     Tornado,
+    /// The weather is windy.
     Wind,
 }
 
@@ -54,6 +66,9 @@ map_names! { Icon;
     Wind, "wind";
 }
 
+/// The type of precipitation that is happening within a [`Datapoint`].
+///
+/// [`Datapoint`]: struct.Datapoint.html
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug, Ord, PartialOrd)]
 pub enum PrecipitationType {
     Rain,
@@ -67,6 +82,10 @@ map_names! { PrecipitationType;
     Snow, "snow";
 }
 
+/// A textual, expiring alert for a location. There may be multiple alerts per
+/// [`Forecast`].
+///
+/// [`Forecast`]: struct.Forecast.html
 #[derive(Clone, Debug)]
 pub struct Alert {
     pub expires: u64,
@@ -89,6 +108,10 @@ impl Alert {
     }
 }
 
+/// A block of data within a [`Forecast`], with potentially many [`Datapoint`]s.
+///
+/// [`Datapoint`]: struct.Datapoint.html
+/// [`Forecast`]: struct.Forecast.html
 #[derive(Clone, Debug)]
 pub struct Datablock {
     pub data: Option<Vec<Datapoint>>,
@@ -109,6 +132,13 @@ impl Datablock {
     }
 }
 
+/// A datapoint within a [`Datablock`], where there is usually multiple.
+///
+/// All fields are optional _except for [`time`]_, as some data may not be
+/// available.
+///
+/// [`Datablock`]: struct.Datablock.html
+/// [`time`]: #structfield.time
 #[derive(Clone, Debug)]
 pub struct Datapoint {
     pub apparent_temperature_max_time: Option<u64>,
@@ -217,6 +247,11 @@ impl Datapoint {
     }
 }
 
+/// A set of flags for a forecast, such as the [`Unit`]s specified or the vector
+/// of [DarkSky] stations reporting.
+///
+/// [`Unit`]: enum.Unit.html
+/// [DarkSky]: https://darksky.net
 #[derive(Clone, Debug)]
 pub struct Flags {
     pub darksky_stations: Option<Vec<String>>,
@@ -249,6 +284,15 @@ impl Flags {
     }
 }
 
+/// A full forecast returned from the [`get_forecast`] and
+/// [`get_forecast_with_options`] functions.
+///
+/// Most of the fields are optional, due to being able to be excluded via the
+/// [`Options`] builder.
+///
+/// [`Options`]: struct.Options.html
+/// [`get_forecast`]: fn.get_forecast.html
+/// [`get_forecast_with_options`]: fn.get_forecast_with_options.html
 #[derive(Clone, Debug)]
 pub struct Forecast {
     pub alerts: Vec<Alert>,
