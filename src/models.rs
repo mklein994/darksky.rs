@@ -82,15 +82,21 @@ map_names! { PrecipitationType;
     Snow, "snow";
 }
 
-/// A textual, expiring alert for a location. There may be multiple alerts per
-/// [`Forecast`].
+/// A textual, expiring severe weather warning issued for a location. There may
+/// be multiple alerts per [`Forecast`].
 ///
 /// [`Forecast`]: struct.Forecast.html
 #[derive(Clone, Debug)]
 pub struct Alert {
+    /// [Unix timestamp][unixtime] of when the alert expires.
+    ///
+    /// [unixtime]: https://en.wikipedia.org/wiki/Unix_time
     pub expires: u64,
+    /// A detailed description of the alert.
     pub description: String,
+    /// A short text summary.
     pub title: String,
+    /// A URI that contains detailed information about the alert.
     pub uri: String,
 }
 
@@ -135,7 +141,15 @@ impl Datablock {
 /// A datapoint within a [`Datablock`], where there is usually multiple.
 ///
 /// All fields are optional _except for [`time`]_, as some data may not be
-/// available.
+/// available for a location at a given point in time.
+///
+/// All of the data oriented fields may have associated `error` fields,
+/// representing the confidence in a prediction or value. An example is
+/// [`precip_accumulation`], which has an associated error field of
+/// [`precip_accumulation_error`]. Those fields represent standard deviations of
+/// the value of the associated field. Smaller error values represent greater
+/// confidence levels, while larger error values represent less confidence.
+/// These fields are omitted where the confidence is not precisely known.
 ///
 /// [`Datablock`]: struct.Datablock.html
 /// [`time`]: #structfield.time
@@ -254,14 +268,35 @@ impl Datapoint {
 /// [DarkSky]: https://darksky.net
 #[derive(Clone, Debug)]
 pub struct Flags {
+    /// A list of DarkSky stations used for the [`Forecast`].
+    ///
+    /// [`Forecast`]: struct.Forecast.html
     pub darksky_stations: Option<Vec<String>>,
+    /// A list of the unavailable DarkSky stations.
     pub darksky_unavailable: Option<String>,
+    /// A list of the
     pub datapoint_stations: Option<Vec<String>>,
+    /// A list of [ISD] stations used.
+    ///
+    /// [ISD]: https://www.ncdc.noaa.gov/isd
     pub isd_stations: Option<Vec<String>>,
+    /// A list of [LAMP] stations used to obtain the information.
+    ///
+    /// [LAMP]: http://www.nws.noaa.gov/mdl/lamp/lamp_info.shtml
     pub lamp_stations: Option<Vec<String>>,
+    /// A list of [METAR] stations used to obtain the information.
+    ///
+    /// [METAR]: https://www.aviationweather.gov/metar
     pub metar_stations: Option<Vec<String>>,
+    /// The [METNO license] used.
+    ///
+    /// [METNO license]: http://www.met.no/
     pub metno_license: Option<String>,
+    /// A list of sources used to obtain the information.
     pub sources: Option<Vec<String>>,
+    /// The [`Unit`]s used to format the data.
+    ///
+    /// [`Unit`]: enum.Unit.html
     pub units: Option<String>,
 }
 
@@ -296,14 +331,58 @@ impl Flags {
 #[derive(Clone, Debug)]
 pub struct Forecast {
     pub alerts: Vec<Alert>,
+    /// The current forecast.
+    ///
+    /// This may be excluded by passing the [`Block::Currently`] variant to
+    /// [`Options::exclude`].
+    ///
+    /// [`Block::Currently`]: enum.Block.html#variant.Currently
+    /// [`Datablock`]: struct.Datablock.html
+    /// [`Options::exclude`]: struct.Options.html#method.exclude
     pub currently: Option<Datapoint>,
+    /// Daily [`Datablock`]s within a forecast.
+    ///
+    /// This may be excluded by passing the [`Block::Daily`] variant to
+    /// [`Options::exclude`].
+    ///
+    /// [`Block::Daily`]: enum.Block.html#variant.Daily
+    /// [`Datablock`]: struct.Datablock.html
+    /// [`Options::exclude`]: struct.Options.html#method.exclude
     pub daily: Option<Datablock>,
+    /// A set of flags returned from the API.
+    ///
+    /// This may be excluded by passing the [`Block::Flags`] variant to
+    /// [`Options::exclude`].
+    ///
+    /// [`Block::Flags`]: enum.Block.html#variant.Flags
+    /// [`Datablock`]: struct.Datablock.html
+    /// [`Options::exclude`]: struct.Options.html#method.exclude
     pub flags: Option<Flags>,
+    /// Hourly [`Datablock`]s within a forecast.
+    ///
+    /// This may be excluded by passing the [`Block::Hourly`] variant to
+    /// [`Options::exclude`].
+    ///
+    /// [`Block::Hourly`]: enum.Block.html#variant.Hourly
+    /// [`Datablock`]: struct.Datablock.html
+    /// [`Options::exclude`]: struct.Options.html#method.exclude
     pub hourly: Option<Datablock>,
+    /// The latitude of the forecast's location.
     pub latitude: f64,
+    /// The longitude of the forecast's location.
     pub longitude: f64,
+    /// Minutely [`Datablock`]s within a forecast.
+    ///
+    /// This may be excluded by passing the [`Block::Minutely`] variant to
+    /// [`Options::exclude`].
+    ///
+    /// [`Block::Minutely`]: enum.Block.html#variant.Minutely
+    /// [`Datablock`]: struct.Datablock.html
+    /// [`Options::exclude`]: struct.Options.html#method.exclude
     pub minutely: Option<Datablock>,
+    /// The timezone offset of the forecast, relative to the UTC timezone.
     pub offset: Option<f64>,
+    /// The name of the timezone.
     pub timezone: String,
 }
 
