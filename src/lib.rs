@@ -331,7 +331,7 @@ fn get_client() -> Result<hyper::Client> {
     let ssl = try!(NativeTlsClient::new().map_err(|e| ::hyper::Error::Ssl(Box::new(e))));
     let connector = HttpsConnector::new(ssl);   
 
-    return Ok(Client::with_connector(connector));
+    Ok(Client::with_connector(connector))
 }
 
 /// Retrieve a [forecast][`Forecast`] for the given latitude and longitude.
