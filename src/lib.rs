@@ -73,6 +73,7 @@
 //! [status]: http://status.darksky.net
 
 extern crate hyper;
+extern crate hyper_native_tls;
 extern crate serde_json;
 
 #[macro_use]
@@ -85,6 +86,8 @@ pub use error::{Error, Result};
 pub use models::*;
 
 use hyper::Client;
+use hyper::net::HttpsConnector;
+use hyper_native_tls::NativeTlsClient;
 use serde_json::Value;
 use std::collections::HashMap;
 use utils::into_string;
@@ -324,6 +327,13 @@ impl Options {
     }
 }
 
+fn get_client() -> Result<hyper::Client> {
+    let ssl = try!(NativeTlsClient::new().map_err(|e| ::hyper::Error::Ssl(Box::new(e))));
+    let connector = HttpsConnector::new(ssl);   
+
+    return Ok(Client::with_connector(connector));
+}
+
 /// Retrieve a [forecast][`Forecast`] for the given latitude and longitude.
 ///
 /// # Examples
@@ -351,7 +361,9 @@ impl Options {
 /// [`Forecast`]: struct.Forecast.html
 pub fn get_forecast(token: &str, latitude: f64, longitude: f64)
     -> Result<Forecast> {
-    let response = try!(Client::new()
+    let client = try!(get_client());
+
+    let response = try!(client
         .get(&format!("{}/forecast/{}/{},{}?units=auto",
                       API_URL,
                       token,
@@ -408,7 +420,8 @@ pub fn get_forecast_with_options<F>(token: &str,
         .map(|(k, v)| format!("{}={}", k, v))
         .collect();
     let built = items.join("&");
-    let response = try!(Client::new()
+    let client = try!(get_client());
+    let response = try!(client
         .get(&format!("{}/forecast/{}/{},{}?{}",
                       API_URL,
                       token,
