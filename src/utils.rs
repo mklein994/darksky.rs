@@ -14,8 +14,7 @@
 // CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 // CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-use serde_json::Value;
-use std::collections::BTreeMap;
+use serde_json::{Map, Value};
 use ::error::{Error, Result};
 
 #[macro_escape]
@@ -85,7 +84,7 @@ macro_rules! map_names {
     }
 }
 
-pub fn into_map(value: Value) -> Result<BTreeMap<String, Value>> {
+pub fn into_map(value: Value) -> Result<Map<String, Value>> {
     match value {
         Value::Object(m) => Ok(m),
         value => Err(Error::Decode("Expected object", value)),
@@ -113,13 +112,13 @@ pub fn into_string(value: Value) -> Result<String> {
     }
 }
 
-pub fn remove(map: &mut BTreeMap<String, Value>, key: &str) -> Result<Value> {
+pub fn remove(map: &mut Map<String, Value>, key: &str) -> Result<Value> {
     map.remove(key)
         .ok_or(Error::Decode("Unexpected absent key",
                              Value::String(key.into())))
 }
 
-pub fn opt<T, F: FnOnce(Value) -> Result<T>>(map: &mut BTreeMap<String, Value>,
+pub fn opt<T, F: FnOnce(Value) -> Result<T>>(map: &mut Map<String, Value>,
                                             key: &str, f: F)
                                             -> Result<Option<T>> {
     match map.remove(key) {
