@@ -24,7 +24,7 @@ macro_rules! field {
     };
 
     ($map:expr, R, float, $key:expr) => {
-        req!(try!(remove(&mut $map, $key)).as_f64())
+        req!(remove(&mut $map, $key)?.as_f64())
     };
 
     ($map:expr, int, $key:expr) => {
@@ -32,25 +32,25 @@ macro_rules! field {
     };
 
     ($map:expr, R, int, $key:expr) => {
-        req!(try!(remove(&mut $map, $key)).as_u64())
+        req!(remove(&mut $map, $key)?.as_u64())
     };
 
     ($map:expr, O, $key:expr, $decode:path) => {
-        try!(opt(&mut $map, $key, $decode))
+        opt(&mut $map, $key, $decode)?
     };
 
     ($map:expr, R, $key:expr, $decode:path) => {
-        try!(remove(&mut $map, $key).and_then($decode))
+        remove(&mut $map, $key).and_then($decode)?
     };
 }
 
 #[macro_escape]
 macro_rules! req {
     ($opt:expr) => {
-        try!($opt.ok_or(Error::Decode(concat!("Type mismatch in model:",
-                                              line!(),
-                                              ": ",
-                                              stringify!($opt)), Value::Null)))
+        $opt.ok_or(Error::Decode(concat!("Type mismatch in model:",
+                                         line!(),
+                                         ": ",
+                                         stringify!($opt)), Value::Null))?
     }
 }
 
@@ -74,7 +74,7 @@ macro_rules! map_names {
 
             #[doc(hiddden)]
             pub fn decode(value: Value) -> Result<Self> {
-                let name = try!(into_string(value));
+                let name = into_string(value)?;
                 Self::from_str(&name).ok_or(Error::Decode(
                     concat!("Expected valid ", stringify!($typ)),
                     Value::String(name)

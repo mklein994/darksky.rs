@@ -328,7 +328,7 @@ impl Options {
 }
 
 fn get_client() -> Result<hyper::Client> {
-    let ssl = try!(NativeTlsClient::new().map_err(|e| ::hyper::Error::Ssl(Box::new(e))));
+    let ssl = NativeTlsClient::new().map_err(|e| ::hyper::Error::Ssl(Box::new(e)))?;
     let connector = HttpsConnector::new(ssl);
 
     Ok(Client::with_connector(connector))
@@ -361,17 +361,12 @@ fn get_client() -> Result<hyper::Client> {
 /// [`Forecast`]: struct.Forecast.html
 pub fn get_forecast(token: &str, latitude: f64, longitude: f64)
     -> Result<Forecast> {
-    let client = try!(get_client());
+    let client = get_client()?;
+    let uri = format!("{}/forecast/{}/{},{}?units=auto", API_URL, token, latitude, longitude);
 
-    let response = try!(client
-        .get(&format!("{}/forecast/{}/{},{}?units=auto",
-                      API_URL,
-                      token,
-                      latitude,
-                      longitude))
-        .send());
+    let response = client.get(&uri).send()?;
 
-    Forecast::decode(try!(serde_json::from_reader(response)))
+    Forecast::decode(serde_json::from_reader(response)?)
 }
 
 /// Retrieve a [forecast][`Forecast`] for the given latitude and longitude,
@@ -414,23 +409,18 @@ pub fn get_forecast_with_options<F>(token: &str,
                                     options: F)
                                     -> Result<Forecast>
                                     where F: FnOnce(Options) -> Options {
+    let client = get_client()?;
     let items: Vec<String> = options(Options(HashMap::new()))
         .0
         .iter()
         .map(|(k, v)| format!("{}={}", k, v))
         .collect();
     let built = items.join("&");
-    let client = try!(get_client());
-    let response = try!(client
-        .get(&format!("{}/forecast/{}/{},{}?{}",
-                      API_URL,
-                      token,
-                      latitude,
-                      longitude,
-                      built))
-        .send());
+    let uri = format!("{}/forecast/{}/{},{}?{}", API_URL, token, latitude, longitude, built);
 
-    Forecast::decode(try!(serde_json::from_reader(response)))
+    let response = client.get(&uri).send()?;
+
+    Forecast::decode(serde_json::from_reader(response)?)
 }
 
 #[cfg(test)]
