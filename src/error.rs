@@ -17,7 +17,7 @@
 use hyper::Error as HyperError;
 use serde_json::{Error as JsonError, Value};
 use std::error::Error as StdError;
-use std::fmt::Display;
+use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::io::Error as IoError;
 use std::result::Result as StdResult;
 
@@ -60,7 +60,7 @@ impl From<JsonError> for Error {
 }
 
 impl Display for Error {
-	fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+	fn fmt(&self, f: &mut Formatter) -> FmtResult {
 		match *self {
 			Error::Hyper(ref inner) => inner.fmt(f),
 			Error::Json(ref inner) => inner.fmt(f),

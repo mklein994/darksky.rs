@@ -85,7 +85,7 @@ mod models;
 pub use error::{Error, Result};
 pub use models::*;
 
-use hyper::Client;
+use hyper::{Client, Error as HyperError};
 use hyper::net::HttpsConnector;
 use hyper_native_tls::NativeTlsClient;
 use serde_json::Value;
@@ -327,8 +327,8 @@ impl Options {
     }
 }
 
-fn get_client() -> Result<hyper::Client> {
-    let ssl = NativeTlsClient::new().map_err(|e| ::hyper::Error::Ssl(Box::new(e)))?;
+fn get_client() -> Result<Client> {
+    let ssl = NativeTlsClient::new().map_err(|e| HyperError::Ssl(Box::new(e)))?;
     let connector = HttpsConnector::new(ssl);
 
     Ok(Client::with_connector(connector))
@@ -425,32 +425,35 @@ pub fn get_forecast_with_options<F>(token: &str,
 
 #[cfg(test)]
 mod tests {
+    use ::std::env;
+    use super::*;
+
     #[test]
-    fn get_forecast() {
-        let token = ::std::env::var("FORECAST_TOKEN").expect("forecast token");
+    fn test_get_forecast() {
+        let token = env::var("FORECAST_TOKEN").expect("forecast token");
 
-        if let Err(why) = ::get_forecast(&token[..], 37.8267, -122.423) {
+        if let Err(why) = get_forecast(&token[..], 37.8267, -122.423) {
             panic!("{:?}", why);
         }
 
-        if let Err(why) = ::get_forecast(&token[..], 39.9042, 116.4074) {
+        if let Err(why) = get_forecast(&token[..], 39.9042, 116.4074) {
             panic!("{:?}", why);
         }
 
-        if let Err(why) = ::get_forecast(&token[..], 19.2465, -99.1013) {
+        if let Err(why) = get_forecast(&token[..], 19.2465, -99.1013) {
             panic!("{:?}", why);
         }
     }
 
     #[test]
-    fn get_forecast_with_options() {
-        let token = ::std::env::var("FORECAST_TOKEN").expect("forecast token");
+    fn test_get_forecast_with_options() {
+        let token = env::var("FORECAST_TOKEN").expect("forecast token");
 
-        match ::get_forecast_with_options(&token[..], 19.2465, -99.1013, |opt| {
-            opt.exclude(vec![::Block::Currently, ::Block::Daily])
+        match get_forecast_with_options(&token[..], 19.2465, -99.1013, |opt| {
+            opt.exclude(vec![Block::Currently, Block::Daily])
                .extend_hourly()
-               .language(::Language::Es)
-               .unit(::Unit::Si)
+               .language(Language::Es)
+               .unit(Unit::Si)
         }) {
             Ok(forecast) => {
                 assert!(forecast.currently.is_none());
