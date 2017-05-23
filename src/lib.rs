@@ -72,12 +72,12 @@
 //! [docs]: https://darksky.net/dev/docs
 //! [status]: http://status.darksky.net
 
+#[macro_use] extern crate serde_derive;
+
 extern crate hyper;
 extern crate hyper_native_tls;
+extern crate serde;
 extern crate serde_json;
-
-#[macro_use]
-mod utils;
 
 mod error;
 mod models;
@@ -86,11 +86,10 @@ pub use error::{Error, Result};
 pub use models::*;
 
 use hyper::{Client, Error as HyperError};
+use hyper::client::Response as HyperResponse;
 use hyper::net::HttpsConnector;
 use hyper_native_tls::NativeTlsClient;
-use serde_json::Value;
 use std::collections::HashMap;
-use utils::into_string;
 
 static API_URL: &'static str = "https://api.darksky.net";
 
@@ -98,20 +97,32 @@ static API_URL: &'static str = "https://api.darksky.net";
 /// to exclude datablocks from being returned from the API, to reduce bandwidth.
 ///
 /// [`Datablock`]: struct.Datablock.html
+#[derive(Copy, Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum Block {
+    #[serde(rename="currently")]
     Currently,
+    #[serde(rename="daily")]
     Daily,
+    #[serde(rename="flags")]
     Flags,
+    #[serde(rename="hourly")]
     Hourly,
+    #[serde(rename="minutely")]
     Minutely,
 }
 
-map_names! { Block;
-    Currently, "currently";
-    Daily, "daily";
-    Flags, "flags";
-    Hourly, "hourly";
-    Minutely, "minutely";
+impl Block {
+    fn name(&self) -> &str {
+        use Block::*;
+
+        match *self {
+            Currently => "currently",
+            Daily => "daily",
+            Flags => "flags",
+            Hourly => "hourly",
+            Minutely => "minutely",
+        }
+    }
 }
 
 /// The language to return from the API for the [`summary`] field.
@@ -121,100 +132,137 @@ map_names! { Block;
 ///
 /// [`Language::En`]: #variant.En
 /// [`summary`]: struct.Datapoint.html#structfield.summary
+#[derive(Copy, Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum Language {
     /// Arabic
+    #[serde(rename="ar")]
     Ar,
     /// Azerbaijani
+    #[serde(rename="az")]
     Az,
     /// Belarusian
+    #[serde(rename="be")]
     Be,
     /// Bosnian
+    #[serde(rename="bs")]
     Bs,
     /// Czech
+    #[serde(rename="cs")]
     Cs,
     /// German
+    #[serde(rename="de")]
     De,
     /// Greek
+    #[serde(rename="el")]
     El,
     /// English
+    #[serde(rename="en")]
     En,
     /// Spanish
+    #[serde(rename="es")]
     Es,
     /// French
+    #[serde(rename="fr")]
     Fr,
     /// Croatian
+    #[serde(rename="hr")]
     Hr,
     /// Hungarian
+    #[serde(rename="hu")]
     Hu,
     /// Indonesian
+    #[serde(rename="id")]
     Id,
     /// Italian
+    #[serde(rename="it")]
     It,
     /// Icelandic
+    #[serde(rename="is")]
     Is,
     /// Cornish
+    #[serde(rename="kw")]
     Kw,
     /// Norwegian Bokmål
+    #[serde(rename="nb")]
     Nb,
     /// Dutch
+    #[serde(rename="nl")]
     Nl,
     /// Polish
+    #[serde(rename="pl")]
     Pl,
     /// Portuguese
+    #[serde(rename="pt")]
     Pt,
     /// Russian
+    #[serde(rename="ru")]
     Ru,
     /// Slovak
+    #[serde(rename="sk")]
     Sk,
     /// Serbian
+    #[serde(rename="sr")]
     Sr,
     /// Swedish
+    #[serde(rename="sv")]
     Sv,
     /// Tetum
+    #[serde(rename="tet")]
     Tet,
     /// Turkish
+    #[serde(rename="tr")]
     Tr,
     /// Ukrainian
+    #[serde(rename="uk")]
     Uk,
     /// Igpay Atinlay
+    #[serde(rename="x-pig-latin")]
     XPigLatin,
     /// Simplified Chinese
+    #[serde(rename="zh")]
     Zh,
     /// Traditional Chinese
+    #[serde(rename="zh-tw")]
     ZhTw,
 }
 
-map_names! { Language;
-    Ar, "ar";
-    Az, "az";
-    Be, "be";
-    Bs, "bs";
-    Cs, "cs";
-    De, "de";
-    El, "el";
-    En, "en";
-    Es, "es";
-    Fr, "fr";
-    Hr, "hr";
-    Hu, "hu";
-    Id, "id";
-    It, "it";
-    Is, "is";
-    Kw, "kw";
-    Nb, "nb";
-    Nl, "nl";
-    Pl, "pl";
-    Pt, "pt";
-    Ru, "ru";
-    Sk, "sk";
-    Sr, "sr";
-    Sv, "sv";
-    Tet, "tet";
-    Tr, "tr";
-    Uk, "uk";
-    XPigLatin, "x-pig-latin";
-    Zh, "zh";
-    ZhTw, "zh-tw";
+impl Language {
+    fn name(&self) -> &str {
+        use Language::*;
+
+        match *self {
+            Ar => "ar",
+            Az => "az",
+            Be => "be",
+            Bs => "bs",
+            Cs => "cs",
+            De => "de",
+            El => "el",
+            En => "en",
+            Es => "es",
+            Fr => "fr",
+            Hr => "hr",
+            Hu => "hu",
+            Id => "id",
+            It => "it",
+            Is => "is",
+            Kw => "kw",
+            Nb => "nb",
+            Nl => "nl",
+            Pl => "pl",
+            Pt => "pt",
+            Ru => "ru",
+            Sk => "sk",
+            Sr => "sr",
+            Sv => "sv",
+            Tet => "tet",
+            Tr => "tr",
+            Uk => "uk",
+            XPigLatin => "x-pig-latin",
+            Zh => "zh",
+            ZhTw => "zh-tw",
+        }
+    }
 }
 
 /// The type of units that the API should send back. `us` is the default value,
@@ -229,16 +277,20 @@ map_names! { Language;
 /// [`Options::unit`]: struct.Options.html#method.unit
 /// [`get_forecast_with_options`]: fn.get_forecast_with_options.html
 /// [docs]: https://darksky.net/dev/docs/forecast
+#[derive(Copy, Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum Unit {
     /// Automatically select units based on geographic location.
+    #[serde(rename="auto")]
     Auto,
     /// Same as [Si][`Unit::Si`], except that [`wind_speed`] is in kilometers
     /// per hour.
     ///
     /// [`wind_speed`]: struct.Datapoint.html#structfield.wind_speed
     /// [`Unit::Si`]: #variant.Si
+    #[serde(rename="ca")]
     Ca,
     /// Imperial units (the default).
+    #[serde(rename="si")]
     Si,
     /// Same as [Si][`Unit::Si`], except that [`nearest_storm_distance`] and
     /// [`visibility`] are in miles and [`wind_speed`] is in miles per hour.
@@ -247,17 +299,25 @@ pub enum Unit {
     /// [`visibility`]: struct.Datapoint.html#structfield.visibility
     /// [`wind_speed`]: struct.Datapoint.html#structfield.wind_speed
     /// [`Unit::Si`]: #variant.Si
+    #[serde(rename="uk2")]
     Uk2,
     /// SI units.
+    #[serde(rename="us")]
     Us,
 }
 
-map_names! { Unit;
-    Auto, "auto";
-    Ca, "ca";
-    Si, "si";
-    Uk2, "uk2";
-    Us, "us";
+impl Unit {
+    fn name(&self) -> &str {
+        use Unit::*;
+
+        match *self {
+            Auto => "auto",
+            Ca => "ca",
+            Si => "si",
+            Uk2 => "uk2",
+            Us => "us",
+        }
+    }
 }
 
 /// Build a list of options to send in the request, including the type of
@@ -366,7 +426,7 @@ pub fn get_forecast(token: &str, latitude: f64, longitude: f64)
 
     let response = client.get(&uri).send()?;
 
-    Forecast::decode(serde_json::from_reader(response)?)
+    serde_json::from_reader::<HyperResponse, Forecast>(response).map_err(From::from)
 }
 
 /// Retrieve a [forecast][`Forecast`] for the given latitude and longitude,
@@ -420,7 +480,7 @@ pub fn get_forecast_with_options<F>(token: &str,
 
     let response = client.get(&uri).send()?;
 
-    Forecast::decode(serde_json::from_reader(response)?)
+    serde_json::from_reader::<HyperResponse, Forecast>(response).map_err(From::from)
 }
 
 #[cfg(test)]
