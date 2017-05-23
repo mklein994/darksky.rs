@@ -3,7 +3,7 @@
 [license-badge]: https://img.shields.io/badge/license-ISC-blue.svg?style=flat-square
 [license]: https://opensource.org/licenses/ISC
 [docs-badge]: https://img.shields.io/badge/docs-online-2020ff.svg?style=flat-square
-[docs]: https://docs.austinhellyer.me/forecast_io/
+[docs]: https://docs.rs/darksky
 
 [![travis-badge][]][travis] [![license-badge][]][license] [![docs-badge][]][docs]
 

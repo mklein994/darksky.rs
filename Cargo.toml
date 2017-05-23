@@ -1,7 +1,7 @@
 [package]
-authors = ["Austin Hellyer <hello@austinhellyer.me>"]
+authors = ["Zeyla Hellyer <zey@zey.moe>"]
 description = "An unofficial Rust wrapper for the darksky.net API."
-documentation = "https://docs.austinhellyer.me/darksky.rs/latest/darksky/"
+documentation = "https://docs.rs/darksky"
 homepage = "https://github.com/zeyla/darksky.rs"
 license = "ISC"
 keywords = [

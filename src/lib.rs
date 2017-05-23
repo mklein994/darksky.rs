@@ -1,6 +1,6 @@
 // ISC License (ISC)
 //
-// Copyright (c) 2016, Austin Hellyer <hello@austinhellyer.me>
+// Copyright (c) 2016, Zeyla Hellyer <zey@zey.moe>
 //
 // Permission to use, copy, modify, and/or distribute this software for any
 // purpose with or without fee is hereby granted, provided that the above
@@ -329,7 +329,7 @@ impl Options {
 
 fn get_client() -> Result<hyper::Client> {
     let ssl = try!(NativeTlsClient::new().map_err(|e| ::hyper::Error::Ssl(Box::new(e))));
-    let connector = HttpsConnector::new(ssl);   
+    let connector = HttpsConnector::new(ssl);
 
     Ok(Client::with_connector(connector))
 }
