@@ -36,7 +36,7 @@
 //!
 //! And include it in your project:
 //!
-//! ```rust
+//! ```rust,no_run
 //! extern crate darksky;
 //! ```
 //!
@@ -44,7 +44,7 @@
 //!
 //! Retrieve a [forecast][`Forecast`] for the given latitude and longitude:
 //!
-//! ```rust
+//! ```rust,no_run
 //! use darksky::Block;
 //! use std::env;
 //!
@@ -398,7 +398,7 @@ fn get_client() -> Result<Client> {
 ///
 /// # Examples
 ///
-/// ```rust
+/// ```rust,no_run
 /// use darksky::Block;
 /// use std::env;
 ///
@@ -438,7 +438,7 @@ pub fn get_forecast(token: &str, latitude: f64, longitude: f64)
 /// Retrieve an extended forecast, excluding the
 /// [minutely block][`Block::Minutely`].
 ///
-/// ```rust
+/// ```rust,no_run
 /// use darksky::Block;
 /// use std::env;
 ///
@@ -481,48 +481,4 @@ pub fn get_forecast_with_options<F>(token: &str,
     let response = client.get(&uri).send()?;
 
     serde_json::from_reader::<HyperResponse, Forecast>(response).map_err(From::from)
-}
-
-#[cfg(test)]
-mod tests {
-    use ::std::env;
-    use super::*;
-
-    #[test]
-    fn test_get_forecast() {
-        let token = env::var("FORECAST_TOKEN").expect("forecast token");
-
-        if let Err(why) = get_forecast(&token[..], 37.8267, -122.423) {
-            panic!("{:?}", why);
-        }
-
-        if let Err(why) = get_forecast(&token[..], 39.9042, 116.4074) {
-            panic!("{:?}", why);
-        }
-
-        if let Err(why) = get_forecast(&token[..], 19.2465, -99.1013) {
-            panic!("{:?}", why);
-        }
-    }
-
-    #[test]
-    fn test_get_forecast_with_options() {
-        let token = env::var("FORECAST_TOKEN").expect("forecast token");
-
-        match get_forecast_with_options(&token[..], 19.2465, -99.1013, |opt| {
-            opt.exclude(vec![Block::Currently, Block::Daily])
-               .extend_hourly()
-               .language(Language::Es)
-               .unit(Unit::Si)
-        }) {
-            Ok(forecast) => {
-                assert!(forecast.currently.is_none());
-                assert!(forecast.daily.is_none());
-                assert!(forecast.flags.is_some());
-            },
-            Err(why) => {
-                panic!("{:?}", why);
-            },
-        }
-    }
 }
