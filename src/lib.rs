@@ -85,11 +85,12 @@ mod models;
 pub use error::{Error, Result};
 pub use models::*;
 
-use hyper::{Client, Error as HyperError};
 use hyper::client::Response as HyperResponse;
 use hyper::net::HttpsConnector;
+use hyper::{Client, Error as HyperError};
 use hyper_native_tls::NativeTlsClient;
 use std::collections::HashMap;
+use std::fmt::Write;
 
 static API_URL: &'static str = "https://api.darksky.net";
 
@@ -336,7 +337,8 @@ impl Unit {
 /// [`Options::extend_hourly`]: struct.Options.html#method.extend_hourly
 /// [`Unit`]: enum.Unit.html
 /// [`get_forecast_with_options`]: fn.get_forecast_with_options.html
-pub struct Options(HashMap<String, String>);
+#[derive(Clone, Debug, Default)]
+pub struct Options(HashMap<&'static str, String>);
 
 impl Options {
     /// Set the list of [`Datablock`]s to exclude. For a full list of potential
@@ -345,13 +347,11 @@ impl Options {
     /// [`Block`]: enum.Block.html
     /// [`Datablock`]: struct.Datablock.html
     pub fn exclude(mut self, blocks: Vec<Block>) -> Self {
-        let block_names: Vec<&str> = blocks.iter()
-            .map(|block| block.name())
-            .collect();
+        let block_names = blocks.iter().map(|b| b.name()).collect::<Vec<_>>();
 
         let list = block_names.join(",");
 
-        self.0.insert("exclude".to_owned(), list.to_owned());
+        self.0.insert("exclude", list.to_owned());
 
         self
     }
@@ -361,7 +361,7 @@ impl Options {
     ///
     /// [`Forecast`]: struct.Forecast.html
     pub fn extend_hourly(mut self) -> Self {
-        self.0.insert("extend".to_owned(), "hourly".to_owned());
+        self.0.insert("extend", "hourly".to_owned());
 
         self
     }
@@ -370,7 +370,7 @@ impl Options {
     ///
     /// [`summary`]: struct.Datapoint.html#structfield.summary
     pub fn language(mut self, language: Language) -> Self {
-        self.0.insert("lang".to_owned(), language.name().to_owned());
+        self.0.insert("lang", language.name().to_owned());
 
         self
     }
@@ -381,7 +381,7 @@ impl Options {
     /// [`Unit`]: enum.Unit.html
     /// [docs]: https://darksky.net/dev/docs
     pub fn unit(mut self, unit: Unit) -> Self {
-        self.0.insert("units".to_owned(), unit.name().to_owned());
+        self.0.insert("units", unit.name().to_owned());
 
         self
     }
@@ -470,13 +470,37 @@ pub fn get_forecast_with_options<F>(token: &str,
                                     -> Result<Forecast>
                                     where F: FnOnce(Options) -> Options {
     let client = get_client()?;
-    let items: Vec<String> = options(Options(HashMap::new()))
-        .0
-        .iter()
-        .map(|(k, v)| format!("{}={}", k, v))
-        .collect();
-    let built = items.join("&");
-    let uri = format!("{}/forecast/{}/{},{}?{}", API_URL, token, latitude, longitude, built);
+    let options = options(Options(HashMap::new())).0;
+
+    let uri = {
+        let mut uri = String::new();
+        uri.push_str(API_URL);
+        uri.push_str("/forecast/");
+        uri.push_str(token);
+        uri.push('/');
+        write!(uri, "{}", latitude)?;
+        uri.push(',');
+        write!(uri, "{}", longitude)?;
+        uri.push('?');
+
+        for (k, v) in options {
+            uri.push_str(k);
+            uri.push('=');
+
+            {
+                let v_bytes = v.into_bytes();
+
+                unsafe {
+                    let bytes = uri.as_mut_vec();
+                    bytes.extend(v_bytes);
+                }
+            }
+
+            uri.push('&');
+        }
+
+        uri
+    };
 
     let response = client.get(&uri).send()?;
 
