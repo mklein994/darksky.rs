@@ -42,7 +42,8 @@
 //!
 //! ### Examples
 //!
-//! Retrieve a [forecast][`Forecast`] for the given latitude and longitude:
+//! Retrieve a [forecast][`Forecast`] for the given latitude and longitude,
+//! using a hyper client with a `hyper_native_tls` connector:
 //!
 //! ```rust,no_run
 //! extern crate darksky;
@@ -78,6 +79,12 @@
 //! # }
 //! ```
 //!
+//! ### Features
+//!
+//! **hyper**: Enables an implementation of [`DarkskyRequester`] on hyper's
+//! `Client` (enabled by default).
+//!
+//! [`DarkskyRequester`]: trait.DarkskyRequester.html
 //! [`Forecast`]: struct.Forecast.html
 //! [DarkSky]: https://darksky.net
 //! [change in name]: http://status.darksky.net/2016/09/20/forecast-api-is-now-dark-sky-api.html
@@ -395,6 +402,7 @@ impl Options {
     }
 }
 
+/// The trait for implementations to different DarkSky routes.
 pub trait DarkskyRequester {
     /// Retrieve a [forecast][`Forecast`] for the given latitude and longitude.
     ///

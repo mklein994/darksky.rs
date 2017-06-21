@@ -31,6 +31,11 @@ And include it in your project:
 extern crate darksky;
 ```
 
+### Features
+
+**hyper**: Enables an implementation of [`DarkskyRequester`] on hyper's
+`Client` (enabled by default).
+
 ### License
 
 License info can be found in the [LICENSE.md] file. Long story short, ISC.
