@@ -45,23 +45,37 @@
 //! Retrieve a [forecast][`Forecast`] for the given latitude and longitude:
 //!
 //! ```rust,no_run
-//! use darksky::Block;
+//! extern crate darksky;
+//! extern crate hyper;
+//! extern crate hyper_native_tls;
+//!
+//! # use std::error::Error;
+//! #
+//! use darksky::{DarkskyRequester, Block};
+//! use hyper::net::HttpsConnector;
+//! use hyper::Client;
+//! use hyper_native_tls::NativeTlsClient;
 //! use std::env;
 //!
-//! let token = env::var("FORECAST_TOKEN").expect("forecast token");
+//! # fn try_main() -> Result<(), Box<Error>> {
+//! let tc = NativeTlsClient::new()?;
+//! let connector = HttpsConnector::new(tc);
+//! let client = Client::with_connector(connector);
+//!
+//! let token = env::var("FORECAST_TOKEN")?;
 //! let lat = 37.8267;
 //! let long = -122.423;
 //!
-//! let req = darksky::get_forecast(&token, lat, long);
-//!
-//! let _forecast = match req {
-//!     Ok(forecast) => forecast,
-//!     Err(why) => {
-//!         println!("Error getting forecast: {:?}", why);
-//!
-//!         return;
-//!     },
-//! };
+//! match client.get_forecast(&token, lat, long) {
+//!     Ok(forecast) => println!("{:?}", forecast),
+//!     Err(why) => println!("Error getting forecast: {:?}", why),
+//! }
+//! #     Ok(())
+//! # }
+//! #
+//! # fn main() {
+//! #     try_main().unwrap();
+//! # }
 //! ```
 //!
 //! [`Forecast`]: struct.Forecast.html
@@ -75,7 +89,6 @@
 #[macro_use] extern crate serde_derive;
 
 extern crate hyper;
-extern crate hyper_native_tls;
 extern crate serde;
 extern crate serde_json;
 
@@ -85,12 +98,7 @@ mod models;
 pub use error::{Error, Result};
 pub use models::*;
 
-use hyper::client::Response as HyperResponse;
-use hyper::net::HttpsConnector;
-use hyper::{Client, Error as HyperError};
-use hyper_native_tls::NativeTlsClient;
 use std::collections::HashMap;
-use std::fmt::Write;
 
 static API_URL: &'static str = "https://api.darksky.net";
 
@@ -387,122 +395,166 @@ impl Options {
     }
 }
 
-fn get_client() -> Result<Client> {
-    let ssl = NativeTlsClient::new().map_err(|e| HyperError::Ssl(Box::new(e)))?;
-    let connector = HttpsConnector::new(ssl);
+pub trait DarkskyRequester {
+    /// Retrieve a [forecast][`Forecast`] for the given latitude and longitude.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,no_run
+    /// extern crate darksky;
+    /// extern crate hyper;
+    /// extern crate hyper_native_tls;
+    ///
+    /// # use std::error::Error;
+    /// #
+    /// use darksky::{DarkskyRequester, Block};
+    /// use hyper::net::HttpsConnector;
+    /// use hyper::Client;
+    /// use hyper_native_tls::NativeTlsClient;
+    /// use std::env;
+    ///
+    /// # fn try_main() -> Result<(), Box<Error>> {
+    /// let tc = NativeTlsClient::new()?;
+    /// let connector = HttpsConnector::new(tc);
+    /// let client = Client::with_connector(connector);
+    ///
+    /// let token = env::var("FORECAST_TOKEN")?;
+    /// let lat = 37.8267;
+    /// let long = -122.423;
+    ///
+    /// match client.get_forecast(&token, lat, long) {
+    ///     Ok(forecast) => println!("{:?}", forecast),
+    ///     Err(why) => println!("Error getting forecast: {:?}", why),
+    /// }
+    /// #     Ok(())
+    /// # }
+    /// #
+    /// # fn main() {
+    /// #     try_main().unwrap();
+    /// # }
+    /// ```
+    ///
+    /// [`Forecast`]: struct.Forecast.html
+    fn get_forecast(&self, token: &str, latitude: f64, longitude: f64) -> Result<Forecast>;
 
-    Ok(Client::with_connector(connector))
+    /// Retrieve a [forecast][`Forecast`] for the given latitude and longitude,
+    /// setting options where needed. For a full list of options, refer to the
+    /// documentation for the [`Options`] builder.
+    ///
+    /// # Examples
+    ///
+    /// Retrieve an extended forecast, excluding the
+    /// [minutely block][`Block::Minutely`].
+    ///
+    /// ```rust,no_run
+    /// extern crate darksky;
+    /// extern crate hyper;
+    /// extern crate hyper_native_tls;
+    ///
+    /// # use std::error::Error;
+    /// #
+    /// use darksky::{DarkskyRequester, Block};
+    /// use hyper::net::HttpsConnector;
+    /// use hyper::Client;
+    /// use hyper_native_tls::NativeTlsClient;
+    /// use std::env;
+    ///
+    /// # fn try_main() -> Result<(), Box<Error>> {
+    /// let tc = NativeTlsClient::new()?;
+    /// let connector = HttpsConnector::new(tc);
+    /// let client = Client::with_connector(connector);
+    ///
+    /// let token = env::var("FORECAST_TOKEN").expect("forecast token");
+    /// let lat = 37.8267;
+    /// let long = -122.423;
+    ///
+    /// let req = client.get_forecast_with_options(&token, lat, long, |o| o
+    ///     .exclude(vec![Block::Minutely])
+    ///     .extend_hourly());
+    ///
+    /// match req {
+    ///     Ok(forecast) => println!("{:?}", forecast),
+    ///     Err(why) => println!("Error getting forecast: {:?}", why),
+    /// }
+    /// #     Ok(())
+    /// # }
+    /// #
+    /// # fn main() {
+    /// #     try_main().unwrap();
+    /// # }
+    /// ```
+    ///
+    /// [`Block::Minutely`]: enum.Block.html#variant.Minutely
+    /// [`Forecast`]: struct.Forecast.html
+    /// [`Options`]: struct.Options.html
+    fn get_forecast_with_options<F>(
+        &self,
+        token: &str,
+        latitude: f64,
+        longitude: f64,
+        options: F
+    ) -> Result<Forecast> where F: FnOnce(Options) -> Options;
 }
 
-/// Retrieve a [forecast][`Forecast`] for the given latitude and longitude.
-///
-/// # Examples
-///
-/// ```rust,no_run
-/// use darksky::Block;
-/// use std::env;
-///
-/// let token = env::var("FORECAST_TOKEN").expect("forecast token");
-/// let lat = 37.8267;
-/// let long = -122.423;
-///
-/// let req = darksky::get_forecast(&token, lat, long);
-///
-/// let _forecast = match req {
-///     Ok(forecast) => forecast,
-///     Err(why) => {
-///         println!("Error getting forecast: {:?}", why);
-///
-///         return;
-///     },
-/// };
-/// ```
-///
-/// [`Forecast`]: struct.Forecast.html
-pub fn get_forecast(token: &str, latitude: f64, longitude: f64)
-    -> Result<Forecast> {
-    let client = get_client()?;
-    let uri = format!("{}/forecast/{}/{},{}?units=auto", API_URL, token, latitude, longitude);
+#[cfg(feature="hyper")]
+mod hyper_support {
+    use hyper::client::{Client, Response};
+    use serde_json;
+    use std::collections::HashMap;
+    use std::fmt::Write;
+    use ::{API_URL, DarkskyRequester, Forecast, Options, Result};
 
-    let response = client.get(&uri).send()?;
+    impl DarkskyRequester for Client {
+        fn get_forecast(&self, token: &str, latitude: f64, longitude: f64) -> Result<Forecast> {
+            let uri = format!("{}/forecast/{}/{},{}?units=auto", API_URL, token, latitude, longitude);
 
-    serde_json::from_reader::<HyperResponse, Forecast>(response).map_err(From::from)
-}
+            let response = self.get(&uri).send()?;
 
-/// Retrieve a [forecast][`Forecast`] for the given latitude and longitude,
-/// setting options where needed. For a full list of options, refer to the
-/// documentation for the [`Options`] builder.
-///
-/// # Examples
-///
-/// Retrieve an extended forecast, excluding the
-/// [minutely block][`Block::Minutely`].
-///
-/// ```rust,no_run
-/// use darksky::Block;
-/// use std::env;
-///
-/// let token = env::var("FORECAST_TOKEN").expect("forecast token");
-/// let lat = 37.8267;
-/// let long = -122.423;
-///
-/// let req = darksky::get_forecast_with_options(&token, lat, long, |o| o
-///     .exclude(vec![Block::Minutely])
-///     .extend_hourly());
-///
-/// let _forecast = match req {
-///     Ok(forecast) => forecast,
-///     Err(why) => {
-///         println!("Error getting forecast: {:?}", why);
-///
-///         return;
-///     },
-/// };
-/// ```
-///
-/// [`Block::Minutely`]: enum.Block.html#variant.Minutely
-/// [`Forecast`]: struct.Forecast.html
-/// [`Options`]: struct.Options.html
-pub fn get_forecast_with_options<F>(token: &str,
-                                    latitude: f64,
-                                    longitude: f64,
-                                    options: F)
-                                    -> Result<Forecast>
-                                    where F: FnOnce(Options) -> Options {
-    let client = get_client()?;
-    let options = options(Options(HashMap::new())).0;
-
-    let uri = {
-        let mut uri = String::new();
-        uri.push_str(API_URL);
-        uri.push_str("/forecast/");
-        uri.push_str(token);
-        uri.push('/');
-        write!(uri, "{}", latitude)?;
-        uri.push(',');
-        write!(uri, "{}", longitude)?;
-        uri.push('?');
-
-        for (k, v) in options {
-            uri.push_str(k);
-            uri.push('=');
-
-            {
-                let v_bytes = v.into_bytes();
-
-                unsafe {
-                    let bytes = uri.as_mut_vec();
-                    bytes.extend(v_bytes);
-                }
-            }
-
-            uri.push('&');
+            serde_json::from_reader::<Response, Forecast>(response).map_err(From::from)
         }
 
-        uri
-    };
+        fn get_forecast_with_options<F>(
+            &self,
+            token: &str,
+            latitude: f64,
+            longitude: f64,
+            options: F
+        ) -> Result<Forecast> where F: FnOnce(Options) -> Options {
+            let options = options(Options(HashMap::new())).0;
 
-    let response = client.get(&uri).send()?;
+            let uri = {
+                let mut uri = String::new();
+                uri.push_str(API_URL);
+                uri.push_str("/forecast/");
+                uri.push_str(token);
+                uri.push('/');
+                write!(uri, "{}", latitude)?;
+                uri.push(',');
+                write!(uri, "{}", longitude)?;
+                uri.push('?');
 
-    serde_json::from_reader::<HyperResponse, Forecast>(response).map_err(From::from)
+                for (k, v) in options {
+                    uri.push_str(k);
+                    uri.push('=');
+
+                    {
+                        let v_bytes = v.into_bytes();
+
+                        unsafe {
+                            let bytes = uri.as_mut_vec();
+                            bytes.extend(v_bytes);
+                        }
+                    }
+
+                    uri.push('&');
+                }
+
+                uri
+            };
+
+            let response = self.get(&uri).send()?;
+
+            serde_json::from_reader::<Response, Forecast>(response).map_err(From::from)
+        }
+    }
 }
