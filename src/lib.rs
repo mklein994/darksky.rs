@@ -95,9 +95,11 @@
 
 #[macro_use] extern crate serde_derive;
 
-extern crate hyper;
 extern crate serde;
 extern crate serde_json;
+
+#[cfg(feature="hyper")]
+extern crate hyper;
 
 mod error;
 mod models;
