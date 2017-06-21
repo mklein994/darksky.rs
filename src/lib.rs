@@ -109,7 +109,7 @@ pub use models::*;
 
 use std::collections::HashMap;
 
-static API_URL: &'static str = "https://api.darksky.net";
+pub static API_URL: &'static str = "https://api.darksky.net";
 
 /// A block is a name of a [`Datablock`] returned from the API. This can be used
 /// to exclude datablocks from being returned from the API, to reduce bandwidth.
