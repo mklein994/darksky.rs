@@ -81,7 +81,7 @@ pub struct Alert {
     /// [Unix timestamp][unixtime] of when the alert expires.
     ///
     /// [unixtime]: https://en.wikipedia.org/wiki/Unix_time
-    pub expires: u64,
+    pub expires: Option<u64>,
     /// A detailed description of the alert.
     pub description: String,
     /// A short text summary.
