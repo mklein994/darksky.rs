@@ -14,7 +14,7 @@ keywords = [
 name = "darksky"
 readme = "README.md"
 repository = "https://github.com/zeyla/darksky.rs.git"
-version = "0.5.0"
+version = "0.6.0"
 
 [dependencies]
 serde = "1.0"
