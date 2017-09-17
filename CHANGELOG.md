@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.6.1] - 2017-09-18
+
+### Added
+
+- 4 missing uv index / wind gust Datapoint fields ([@rparrett]) [c:bbe3a1d]
+- 4 missing temperature low / high Datapoint fields ([@rparrett]) [c:0cec145]
+- More entries to .gitignore [c:7ef66b1]
+
 ## [0.6.0] - 2017-08-20
 
 ### Added
@@ -78,15 +86,18 @@ data;
 
 Initial commit.
 
+[c:0cec145]: https://github.com/zeyla/darksky.rs/commit/0cec1452396b658281b47df9548360708c4caa60
 [c:1e693e6]: https://github.com/zeyla/darksky.rs/commit/1e693e640bf43eb8157d91b4b66e7f5088bced70
 [c:63b14a7]: https://github.com/zeyla/darksky.rs/commit/63b14a7b5e92f26778a43813f69972ac9aa3835a
 [c:64fc545]: https://github.com/zeyla/darksky.rs/commit/64fc545886cd883e8d502cb7336dc6bcde0345d1
 [c:6f49baa]: https://github.com/zeyla/darksky.rs/commit/6f49baa2469d891aee847f6178a853e6ef4ba6b7
 [c:792c151]: https://github.com/zeyla/darksky.rs/commit/792c1518291c77f7c5669ae8bdea3cda084688e5
+[c:7ef66b1]: https://github.com/zeyla/darksky.rs/commit/7ef66b1b8894dbe391cf9f5ce51d7de258726593
 [c:945e86c]: https://github.com/zeyla/darksky.rs/commit/945e86c99735732e3709c2517e8ad36284dcbe59
 [c:a32b4fd]: https://github.com/zeyla/darksky.rs/commit/a32b4fde289c0db4e636808d288fad7156179891
 [c:a7b6438]: https://github.com/zeyla/darksky.rs/commit/a7b6438ee7fe663c9bf33e62c3bcb6117926779c
 [c:aedafd9]: https://github.com/zeyla/darksky.rs/commit/aedafd9fce4d45280518e3f8f209a837ecacdc4f
+[c:bbe3a1d]: https://github.com/zeyla/darksky.rs/commit/bbe3a1d41cea96bd923d8fe2e685c114c25fc314
 [c:f5b0269]: https://github.com/zeyla/darksky.rs/commit/f5b0269b6fe0cf0643f942893368436ef14b6b68
 
 [@rparrett]: https://github.com/rparrett
