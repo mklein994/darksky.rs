@@ -92,6 +92,7 @@
 //! [devportal]: https://darksky.net/dev
 //! [docs]: https://darksky.net/dev/docs
 //! [status]: http://status.darksky.net
+#![deny(missing_docs)]
 
 #[macro_use] extern crate serde_derive;
 
@@ -109,6 +110,7 @@ pub use models::*;
 
 use std::collections::HashMap;
 
+/// The base URI to the API.
 pub static API_URL: &'static str = "https://api.darksky.net";
 
 /// A block is a name of a [`Datablock`] returned from the API. This can be used
@@ -117,14 +119,20 @@ pub static API_URL: &'static str = "https://api.darksky.net";
 /// [`Datablock`]: struct.Datablock.html
 #[derive(Copy, Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum Block {
+    /// Indicator to retrieve the current weather in a request.
     #[serde(rename="currently")]
     Currently,
+    /// Indicator to retrieve the daily weather in a request.
     #[serde(rename="daily")]
     Daily,
+    /// Indicator to retrieve miscellaneous metadata in a request.
     #[serde(rename="flags")]
     Flags,
+    /// Indicator to retrieve hour-by-hour data over the next two days in a
+    /// request.
     #[serde(rename="hourly")]
     Hourly,
+    /// Indicator to retrieve minute-by-minute data for the next hour.
     #[serde(rename="minutely")]
     Minutely,
 }

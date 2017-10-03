@@ -64,10 +64,13 @@ pub enum Icon {
 /// [`Datapoint`]: struct.Datapoint.html
 #[derive(Copy, Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum PrecipitationType {
+    /// Indicator that the type of precipitation is rain.
     #[serde(rename="rain")]
     Rain,
+    /// Indicator that the type of precipitation is sleet.
     #[serde(rename="sleet")]
     Sleet,
+    /// Indicator that the type of precipitation is snow.
     #[serde(rename="snow")]
     Snow,
 }
@@ -96,8 +99,11 @@ pub struct Alert {
 /// [`Forecast`]: struct.Forecast.html
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Datablock {
+    /// The data for the datablock, if there is any data available.
     pub data: Option<Vec<Datapoint>>,
+    /// The icon representing the weather type for the datablock.
     pub icon: Option<Icon>,
+    /// A written summary of the datablock's expected weather.
     pub summary: Option<String>,
 }
 
@@ -119,60 +125,251 @@ pub struct Datablock {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all="camelCase")]
 pub struct Datapoint {
+    /// The unix timestamp representing when the daytime high apparent
+    /// temperature occurs.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub apparent_temperature_max_time: Option<u64>,
+    /// The daytime high apparent temperature.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub apparent_temperature_max: Option<f64>,
+    /// The unix timestamp representing when the overnight low apparent
+    /// temperature occurs.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub apparent_temperature_min_time: Option<u64>,
+    /// The overnight low apparent temperature.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub apparent_temperature_min: Option<f64>,
+    /// The apparent (or "feels like") temperature in degrees Fahrenheit.
+    ///
+    /// **Note**: This is not present on `daily`.
     pub apparent_temperature: Option<f64>,
+    /// The amount of error possible within the [`cloud_cover`] value.
+    ///
+    /// [`cloud_cover`]: #structfield.cloud_cover
     pub cloud_cover_error: Option<f64>,
+    /// The percentage of sky occluded by clouds.
+    ///
+    /// This value is between `0` and `1`, inclusively.
     pub cloud_cover: Option<f64>,
+    /// The amount of error possible within the [`dew_point`] value.
+    ///
+    /// [`dew_point`]: #structfield.dew_point
     pub dew_point_error: Option<f64>,
+    /// The dew point in degrees Fahrenheit.
     pub dew_point: Option<f64>,
+    /// The amount of error possible within the [`humidity`] value.
+    ///
+    /// [`humidity`]: #structfield.humidity
     pub humidity_error: Option<f64>,
+    /// The relative humidity.
+    ///
+    /// This value is between `0` and `1`, inclusively.
     pub humidity: Option<f64>,
+    /// A machine-readable summary of the datapoint, suitable for selecting an
+    /// icon to display.
     pub icon: Option<Icon>,
+    /// The fractional part of the [lunation number] during the given day.
+    ///
+    /// A value of `0` corresponds to a new moon, `0.25` to a first quarter
+    /// moon, `0.5` to a full moon, `0.75` to a last quarter moon.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub moon_phase: Option<f64>,
+    /// The approximate direction of the nearest storm in degrees, with true
+    /// north at 0 degrees and progressing clockwise.
+    ///
+    /// If `nearestStormDistance` is `0`, then this value will not be present.
+    ///
+    /// **Note**: This is only present on the `currently` block.
     pub nearest_storm_bearing: Option<f64>,
+    /// The approximate distance to the nearest storm in miles.
+    ///
+    /// A storm distance of `0` doesn't necessarily refer to a storm at the
+    /// requested location, but rather a storm in the vicinity of that location.
+    ///
+    /// **Note**: This is only present on the `currently` block.
     pub nearest_storm_distance: Option<f64>,
+    /// The amount of error possible within the [`ozone`] value.
+    ///
+    /// [`ozone`]: #structfield.ozone
     pub ozone_error: Option<f64>,
+    /// The columnar density of total atmospheric ozone at the given time in
+    /// Dobson units.
     pub ozone: Option<f64>,
+    /// The amount of error possible within the [`precip_accumulation`] value.
+    ///
+    /// [`precip_accumulation`]: #structfield.precip_accumulation
     pub precip_accumulation_error: Option<f64>,
+    /// The amount of snowfall accumulation expected to occur, in inches.
+    ///
+    /// If no snowfall is expected, this will be None.
+    ///
+    /// **Note**: This is only present on `hourly` and `daily` blocks.
     pub precip_accumulation: Option<f64>,
+    /// The amount of error possible within the [`precip_intensity`] value.
+    ///
+    /// [`precip_intensity`]: #structfield.precip_intensity
     pub precip_intensity_error: Option<f64>,
+    /// The amount of error possible within the [`precip_intensity_max`] value.
+    ///
+    /// [`precip_intensity_max`]: #structfield.precip_intensity_max
     pub precip_intensity_max_error: Option<f64>,
+    /// The unix timestamp of when [`precip_intensity_max`] occurs during a
+    /// given day.
+    ///
+    /// **Note**: This is only present on the `daily` block.
+    ///
+    /// [`precip_intensity_max`]: #structfield.precip_intensity_max
     pub precip_intensity_max_time: Option<u64>,
+    /// The maximum value of [`precip_intensity`] during a given day.
+    ///
+    /// **Note**: This is only present on the `daily` block.
+    ///
+    /// [`precip_intensity`]: #structfield.precip_intensity
     pub precip_intensity_max: Option<f64>,
+    /// The intensity (in inches of liquid water per hour) precipitation
+    /// occurring at the given time.
+    ///
+    /// This value is conditional on probability (that is, assuming any
+    /// precipitation occurs at all) for `minutely` datapoints, and
+    /// unconditional otherwise.
     pub precip_intensity: Option<f64>,
+    /// The amount of error possible within the [`precip_probability`] value.
+    ///
+    /// [`precip_probability`]: #structfield.precip_probability
     pub precip_probability_error: Option<f64>,
+    /// The probably of precipitation occurring.
+    ///
+    /// This value is between `0` and `1`, inclusively.
     pub precip_probability: Option<f64>,
+    /// The type of precipitation occurring at a given time.
+    ///
+    /// If [`precip_intensity`] is `0`, then this field will be `None`.
+    ///
+    /// Additionally, due to the lack of data in DarkSky sources, historical
+    /// `precip_type` values is usually estimated, rather than observed.
+    ///
+    /// [`precip_intensity`]: #structfield.precip_intensity
     pub precip_type: Option<PrecipitationType>,
+    /// The amount of error possible within the [`pressure`] value.
+    ///
+    /// [`pressure`]: #structfield.pressure
     pub pressure_error: Option<f64>,
+    /// The sea-level air pressure in millibars.
     pub pressure: Option<f64>,
+    /// A human-readable text summary of the datapoint.
+    ///
+    /// **Note**: Do not use this for automated icon display purposes, use the
+    /// [`icon`] field instead.
+    ///
+    /// [`icon`]: #structfield.icon
     pub summary: Option<String>,
+    /// The unix timestamp of when the sun will rise during a given day.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub sunrise_time: Option<u64>,
+    /// The unix timestamp of when the sun will set during a given day.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub sunset_time: Option<u64>,
+    /// The overnight low temperature.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub temperature_low: Option<f64>,
+    /// The unix timestamp representing when the overnight low temperature
+    /// occurs.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub temperature_low_time: Option<u64>,
+    /// The daytime high temperature.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub temperature_high: Option<f64>,
+    /// The unix timestamp representing when the daytime high temperature
+    /// occurs.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub temperature_high_time: Option<u64>,
+    /// The amount of error possible within the [`temperature_max`] value.
+    ///
+    /// [`temperature_max`]: #structfield.temperature_max
     pub temperature_max_error: Option<f64>,
+    /// The unix timestamp representing when the maximum temperature during a
+    /// given date occurs.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub temperature_max_time: Option<u64>,
+    /// The maximum temperature during a given date.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub temperature_max: Option<f64>,
+    /// The amount of error possible within the [`temperature_min`] value.
+    ///
+    /// [`temperature_min`]: #structfield.temperature_min
     pub temperature_min_error: Option<f64>,
+    /// The unix timestamp representing when the minimum temperature during a
+    /// given date occurs.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub temperature_min_time: Option<u64>,
+    /// The minimum temperature during a given date.
+    ///
+    /// **Note**: This is only present on the `daily` block.
     pub temperature_min: Option<f64>,
+    /// The amount of error possible within the [`temperature`] value.
+    ///
+    /// [`temperature`]: #structfield.temperature
     pub temperature_error: Option<f64>,
+    /// The air temperature in degrees Fahrenheit.
     pub temperature: Option<f64>,
+    /// The unix timestamp at which the datapoint begins.
+    ///
+    /// `minutely` datapoints are always aligned to the top of the minute.
+    ///
+    /// `hourly` datapoints align to the top of the hour.
+    ///
+    /// `daily` datapoints align to midnight of the day.
+    ///
+    /// All are according to the local timezone.
     pub time: u64,
+    /// The UV index.
     pub uv_index: Option<u64>,
+    /// The unix timestamp of when the maximum [`uv_index`] occurs during the
+    /// given day.
+    ///
+    /// [`uv_index`]: #structfield.uv_index
     pub uv_index_time: Option<u64>,
+    /// The amount of error possible within the [`visibility`] value.
+    ///
+    /// [`visibility`]: #structfield.visibility
     pub visibility_error: Option<f64>,
+    /// The average visibility in miles, capped at 10 miles.
     pub visibility: Option<f64>,
+    /// The amount of error possible within the [`wind_bearing`] value.
+    ///
+    /// [`wind_bearing`]: #structfield.wind_bearing
     pub wind_bearing_error: Option<f64>,
+    /// The direction that the wind is coming from in degrees.
+    ///
+    /// True north is at 0 degrees, progressing clockwise.
+    ///
+    /// If [`wind_speed`] is `0`, then this value will not be defined.
+    ///
+    /// [`wind_speed`]: #structfield.wind_speed
     pub wind_bearing: Option<f64>,
+    /// The wind gust speed in miles per hour.
     pub wind_gust: Option<f64>,
+    /// The amount of time that the wind gust is expected to occur.
     pub wind_gust_time: Option<u64>,
+    /// The amount of error possible within the [`wind_speed`] value.
+    ///
+    /// [`wind_speed`]: #structfield.wind_speed
     pub wind_speed_error: Option<f64>,
+    /// The wind speed in miles per hour.
     pub wind_speed: Option<f64>,
 }
 
@@ -227,6 +424,7 @@ pub struct Flags {
 /// [`get_forecast_with_options`]: fn.get_forecast_with_options.html
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Forecast {
+    /// Contains any severe weather alerts pertinent to the location.
     #[serde(default)]
     pub alerts: Vec<Alert>,
     /// The current forecast.
