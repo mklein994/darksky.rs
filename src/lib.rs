@@ -396,6 +396,57 @@ impl Options {
         self
     }
 
+    /// Gets a mutable reference to the underlying HashMap.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use darksky::Options;
+    ///
+    /// let mut options = Options::default().extend_hourly();
+    ///
+    /// // Note: you probably shouldn't add keys yourself. If there is a key the
+    /// // library does not support, please submit a PR.
+    /// let mut inner = options.get_mut();
+    /// inner.insert("foo", "bar".to_owned());
+    ///
+    /// assert_eq!(inner.len(), 2);
+    /// ```
+    pub fn get_mut(&mut self) -> &mut HashMap<&'static str, String> {
+        &mut self.0
+    }
+
+    /// Gets an immuatble reference to the underlying HashMap.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use darksky::{Block, Options};
+    ///
+    /// let options = Options::default().exclude(vec![Block::Hourly]);
+    ///
+    /// assert_eq!(options.get_ref().len(), 1);
+    /// ```
+    pub fn get_ref(&self) -> &HashMap<&'static str, String> {
+        &self.0
+    }
+
+    /// Unwraps the struct, returning the underlying HashMap.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use darksky::{Block, Options};
+    ///
+    /// let options = Options::default().exclude(vec![Block::Hourly]);
+    /// let map = options.into_inner();
+    ///
+    /// assert!(map.get("exclude").is_some());
+    /// ```
+    pub fn into_inner(self) -> HashMap<&'static str, String> {
+        self.0
+    }
+
     /// Set the language of the [`summary`] provided.
     ///
     /// [`summary`]: struct.Datapoint.html#structfield.summary
