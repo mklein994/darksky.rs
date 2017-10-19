@@ -25,6 +25,10 @@ serde_json = "1.0"
 optional = true
 version = "0.10"
 
+[dependencies.reqwest]
+optional = true
+version = "~0.8"
+
 [dev-dependencies]
 hyper-native-tls = "0.2"
 

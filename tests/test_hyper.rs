@@ -1,3 +1,5 @@
+#![cfg(feature = "hyper")]
+
 extern crate darksky;
 extern crate hyper;
 extern crate hyper_native_tls;

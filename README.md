@@ -16,7 +16,6 @@ An unofficial Rust wrapper for the [DarkSky] API.
 [change in name], this package has been renamed to `darksky`, and can be found
 on [crates.io] by the same name.
 
-
 ### Installation
 
 Add the following dependency to your `Cargo.toml`:
@@ -33,8 +32,9 @@ extern crate darksky;
 
 ### Features
 
-**hyper**: Enables an implementation of [`DarkskyRequester`] on hyper's
-`Client` (enabled by default).
+- **hyper**: Enables an implementation of the requester on hyper's `Client`
+  (enabled by default).
+- **reqwest**: Enables an implementation of the requester on reqwest's `Client`.
 
 ### License
 

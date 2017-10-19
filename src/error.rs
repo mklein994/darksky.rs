@@ -22,6 +22,8 @@ use std::result::Result as StdResult;
 
 #[cfg(feature = "hyper")]
 use hyper::Error as HyperError;
+#[cfg(feature = "reqwest")]
+use reqwest::Error as ReqwestError;
 
 /// A generic result type for all public-facing functions within the library.
 pub type Result<T> = StdResult<T, Error>;
@@ -44,6 +46,9 @@ pub enum Error {
 	Json(JsonError),
 	/// A `std::io` module error
 	Io(IoError),
+	#[cfg(feature = "reqwest")]
+	/// A `reqwest` crate error
+	Reqwest(ReqwestError),
 }
 
 impl From<FmtError> for Error {
@@ -71,6 +76,13 @@ impl From<JsonError> for Error {
 	}
 }
 
+#[cfg(feature = "reqwest")]
+impl From<ReqwestError> for Error {
+	fn from(err: ReqwestError) -> Error {
+		Error::Reqwest(err)
+	}
+}
+
 impl Display for Error {
 	fn fmt(&self, f: &mut Formatter) -> FmtResult {
 		f.write_str(self.description())
@@ -86,6 +98,8 @@ impl StdError for Error {
 			Error::Hyper(ref inner) => inner.description(),
 			Error::Json(ref inner) => inner.description(),
 			Error::Io(ref inner) => inner.description(),
+			#[cfg(feature = "reqwest")]
+			Error::Reqwest(ref inner) => inner.description(),
 		}
 	}
 }

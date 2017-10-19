@@ -102,6 +102,8 @@ extern crate serde_json;
 
 #[cfg(feature = "hyper")]
 extern crate hyper;
+#[cfg(feature = "reqwest")]
+extern crate reqwest;
 
 pub mod constants;
 pub mod models;
@@ -117,6 +119,8 @@ pub use error::{Error, Result};
 
 #[cfg(feature = "hyper")]
 pub use bridge::DarkskyHyperRequester;
+#[cfg(feature = "reqwest")]
+pub use bridge::DarkskyReqwestRequester;
 
 use std::collections::HashMap;
 

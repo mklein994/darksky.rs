@@ -13,45 +13,46 @@
 // RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 // CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 // CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-//! Bridged support for the `hyper` library.
+//! Bridge to provide DarkSky client implementation for the `reqwest` crate.
+//!
+//! # Examples
+//!
+//! Refer to the documentation for [`DarkskyReqwestRequester`].
+//!
+//! [`DarkskyReqwestRequester`]: trait.DarkskyReqwestRequester.html
 
-use hyper::client::Client;
-use std::collections::HashMap;
+use reqwest::Client;
 use ::models::Forecast;
 use ::{Options, Result, internal, utils};
 
-/// The trait for `hyper` implementations to different DarkSky routes.
-pub trait DarkskyHyperRequester {
-    /// Retrieve a [forecast][`Forecast`] for the given latitude and longitude.
+/// The trait for `reqwest` implementations to different DarkSky routes.
+pub trait DarkskyReqwestRequester {
+    /// Retrieve a [`Forecast`] for the given latitude and longitude.
     ///
     /// # Examples
     ///
+    /// Retrieve a forecast for a location, taking a token from the environment:
+    ///
     /// ```rust,no_run
     /// extern crate darksky;
-    /// extern crate hyper;
-    /// extern crate hyper_native_tls;
+    /// extern crate reqwest;
     ///
     /// # use std::error::Error;
     /// #
-    /// use darksky::{DarkskyHyperRequester, Block};
-    /// use hyper::net::HttpsConnector;
-    /// use hyper::Client;
-    /// use hyper_native_tls::NativeTlsClient;
+    /// # fn try_main() -> Result<(), Box<Error>> {
+    /// use darksky::DarkskyReqwestRequester;
+    /// use reqwest::Client;
     /// use std::env;
     ///
-    /// # fn try_main() -> Result<(), Box<Error>> {
-    /// let tc = NativeTlsClient::new()?;
-    /// let connector = HttpsConnector::new(tc);
-    /// let client = Client::with_connector(connector);
-    ///
     /// let token = env::var("FORECAST_TOKEN")?;
+    /// let client = Client::new();
+    ///
     /// let lat = 37.8267;
     /// let long = -122.423;
     ///
-    /// match client.get_forecast(&token, lat, long) {
-    ///     Ok(forecast) => println!("{:?}", forecast),
-    ///     Err(why) => println!("Error getting forecast: {:?}", why),
-    /// }
+    /// let req = client.get_forecast(&token, lat, long)?;
+    ///
+    /// println!("Forecast: {:?}", req);
     /// #     Ok(())
     /// # }
     /// #
@@ -60,48 +61,42 @@ pub trait DarkskyHyperRequester {
     /// # }
     /// ```
     ///
-    /// [`Forecast`]: struct.Forecast.html
-    fn get_forecast(&self, token: &str, latitude: f64, longitude: f64) -> Result<Forecast>;
+    /// [`Block::Minutely`]: ../enum.Block.html#variant.Minutely
+    /// [`Forecast`]: ../models/struct.Forecast.html
+    fn get_forecast(&self, token: &str, latitude: f64, longitude: f64)
+        -> Result<Forecast>;
 
-    /// Retrieve a [forecast][`Forecast`] for the given latitude and longitude,
-    /// setting options where needed. For a full list of options, refer to the
+    /// Retrieve a [`Forecast`] for the given latitude and longitude, setting
+    /// options where needed. For a full list of options, refer to the
     /// documentation for the [`Options`] builder.
     ///
     /// # Examples
     ///
     /// Retrieve an extended forecast, excluding the
-    /// [minutely block][`Block::Minutely`].
+    /// [minutely block][`Block::Minutely`], taking a token from the
+    /// environment:
     ///
     /// ```rust,no_run
     /// extern crate darksky;
-    /// extern crate hyper;
-    /// extern crate hyper_native_tls;
+    /// extern crate reqwest;
     ///
     /// # use std::error::Error;
     /// #
-    /// use darksky::{DarkskyHyperRequester, Block};
-    /// use hyper::net::HttpsConnector;
-    /// use hyper::Client;
-    /// use hyper_native_tls::NativeTlsClient;
+    /// # fn try_main() -> Result<(), Box<Error>> {
+    /// use darksky::{Block, DarkskyReqwestRequester};
+    /// use reqwest::Client;
     /// use std::env;
     ///
-    /// # fn try_main() -> Result<(), Box<Error>> {
-    /// let tc = NativeTlsClient::new()?;
-    /// let connector = HttpsConnector::new(tc);
-    /// let client = Client::with_connector(connector);
+    /// let token = env::var("FORECAST_TOKEN")?;
+    /// let client = Client::new();
     ///
-    /// let token = env::var("FORECAST_TOKEN").expect("forecast token");
     /// let lat = 37.8267;
     /// let long = -122.423;
     ///
     /// let req = client.get_forecast_with_options(&token, lat, long, |o| o
-    ///     .exclude(vec![Block::Minutely])
-    ///     .extend_hourly());
+    ///     .exclude(vec![Block::Minutely]))?;
     ///
-    /// match req {
-    ///     Ok(forecast) => println!("{:?}", forecast),
-    ///     Err(why) => println!("Error getting forecast: {:?}", why),
-    /// }
+    /// println!("Forecast: {:?}", req);
     /// #     Ok(())
     /// # }
     /// #
@@ -110,19 +105,19 @@ pub trait DarkskyHyperRequester {
     /// # }
     /// ```
     ///
-    /// [`Block::Minutely`]: enum.Block.html#variant.Minutely
-    /// [`Forecast`]: struct.Forecast.html
-    /// [`Options`]: struct.Options.html
+    /// [`Block::Minutely`]: ../enum.Block.html#variant.Minutely
+    /// [`Forecast`]: ../models/struct.Forecast.html
+    /// [`Options`]: ../struct.Options.html
     fn get_forecast_with_options<F>(
         &self,
         token: &str,
         latitude: f64,
         longitude: f64,
-        options: F
+        options: F,
     ) -> Result<Forecast> where F: FnOnce(Options) -> Options;
 }
 
-impl DarkskyHyperRequester for Client {
+impl DarkskyReqwestRequester for Client {
     fn get_forecast(&self, token: &str, latitude: f64, longitude: f64)
         -> Result<Forecast> {
         let uri = utils::uri(token, latitude, longitude);
@@ -137,7 +132,7 @@ impl DarkskyHyperRequester for Client {
         longitude: f64,
         options: F,
     ) -> Result<Forecast> where F: FnOnce(Options) -> Options {
-        let options = options(Options(HashMap::new())).0;
+        let options = options(Options::default()).0;
         let uri = utils::uri_optioned(token, latitude, longitude, options)?;
 
         internal::from_reader(self.get(&uri).send()?)
