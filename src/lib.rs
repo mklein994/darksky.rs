@@ -105,6 +105,7 @@ extern crate hyper;
 
 pub mod constants;
 pub mod models;
+pub mod utils;
 
 #[cfg(feature = "hyper")]
 pub mod bridge;

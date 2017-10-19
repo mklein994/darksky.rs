@@ -18,10 +18,8 @@
 use hyper::client::{Client, Response};
 use serde_json;
 use std::collections::HashMap;
-use std::fmt::Write;
-use ::constants::API_URL;
 use ::models::Forecast;
-use ::{Options, Result};
+use ::{Options, Result, utils};
 
 /// The trait for implementations to different DarkSky routes.
 pub trait DarkskyHyperRequester {
@@ -128,7 +126,7 @@ pub trait DarkskyHyperRequester {
 impl DarkskyHyperRequester for Client {
     fn get_forecast(&self, token: &str, latitude: f64, longitude: f64)
         -> Result<Forecast> {
-        let uri = format!("{}/forecast/{}/{},{}?units=auto", API_URL, token, latitude, longitude);
+        let uri = utils::uri(token, latitude, longitude);
 
         let response = self.get(&uri).send()?;
 
@@ -143,36 +141,7 @@ impl DarkskyHyperRequester for Client {
         options: F,
     ) -> Result<Forecast> where F: FnOnce(Options) -> Options {
         let options = options(Options(HashMap::new())).0;
-
-        let uri = {
-            let mut uri = String::new();
-            uri.push_str(API_URL);
-            uri.push_str("/forecast/");
-            uri.push_str(token);
-            uri.push('/');
-            write!(uri, "{}", latitude)?;
-            uri.push(',');
-            write!(uri, "{}", longitude)?;
-            uri.push('?');
-
-            for (k, v) in options {
-                uri.push_str(k);
-                uri.push('=');
-
-                {
-                    let v_bytes = v.into_bytes();
-
-                    unsafe {
-                        let bytes = uri.as_mut_vec();
-                        bytes.extend(v_bytes);
-                    }
-                }
-
-                uri.push('&');
-            }
-
-            uri
-        };
+        let uri = utils::uri_optioned(token, latitude, longitude, options)?;
 
         let response = self.get(&uri).send()?;
 
