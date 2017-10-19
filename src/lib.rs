@@ -103,6 +103,8 @@ extern crate serde_json;
 #[cfg(feature = "hyper")]
 extern crate hyper;
 
+pub mod constants;
+
 #[cfg(feature = "hyper")]
 pub mod bridge;
 
@@ -116,9 +118,6 @@ pub use models::*;
 pub use bridge::DarkskyHyperRequester;
 
 use std::collections::HashMap;
-
-/// The base URI to the API.
-pub static API_URL: &'static str = "https://api.darksky.net";
 
 /// A block is a name of a [`Datablock`] returned from the API. This can be used
 /// to exclude datablocks from being returned from the API, to reduce bandwidth.

@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- `API_URL` is now located at `constants::API_URL` and is now a constant
+
 ## [0.6.1] - 2017-09-18
 
 ### Added

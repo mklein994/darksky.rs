@@ -19,7 +19,8 @@ use hyper::client::{Client, Response};
 use serde_json;
 use std::collections::HashMap;
 use std::fmt::Write;
-use ::{API_URL, Forecast, Options, Result};
+use ::constants::API_URL;
+use ::{Forecast, Options, Result};
 
 /// The trait for implementations to different DarkSky routes.
 pub trait DarkskyHyperRequester {
