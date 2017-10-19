@@ -20,7 +20,7 @@ use std::fmt::{Display, Formatter, Error as FmtError, Result as FmtResult};
 use std::io::Error as IoError;
 use std::result::Result as StdResult;
 
-#[cfg(feature="hyper")]
+#[cfg(feature = "hyper")]
 use hyper::Error as HyperError;
 
 /// A generic result type for all public-facing functions within the library.
@@ -38,7 +38,7 @@ pub enum Error {
 	/// A `std::fmt` error
 	Fmt(FmtError),
 	/// A `hyper` crate error
-	#[cfg(feature="hyper")]
+	#[cfg(feature = "hyper")]
 	Hyper(HyperError),
 	/// A `serde_json` crate error
 	Json(JsonError),
@@ -52,7 +52,7 @@ impl From<FmtError> for Error {
 	}
 }
 
-#[cfg(feature="hyper")]
+#[cfg(feature = "hyper")]
 impl From<HyperError> for Error {
 	fn from(err: HyperError) -> Error {
 		Error::Hyper(err)
@@ -82,7 +82,7 @@ impl StdError for Error {
 		match *self {
 			Error::Decode(msg, _) => msg,
 			Error::Fmt(ref inner) => inner.description(),
-			#[cfg(feature="hyper")]
+			#[cfg(feature = "hyper")]
 			Error::Hyper(ref inner) => inner.description(),
 			Error::Json(ref inner) => inner.description(),
 			Error::Io(ref inner) => inner.description(),

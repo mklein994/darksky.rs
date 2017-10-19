@@ -100,7 +100,7 @@
 extern crate serde;
 extern crate serde_json;
 
-#[cfg(feature="hyper")]
+#[cfg(feature = "hyper")]
 extern crate hyper;
 
 #[cfg(feature = "hyper")]
@@ -127,20 +127,20 @@ pub static API_URL: &'static str = "https://api.darksky.net";
 #[derive(Copy, Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum Block {
     /// Indicator to retrieve the current weather in a request.
-    #[serde(rename="currently")]
+    #[serde(rename = "currently")]
     Currently,
     /// Indicator to retrieve the daily weather in a request.
-    #[serde(rename="daily")]
+    #[serde(rename = "daily")]
     Daily,
     /// Indicator to retrieve miscellaneous metadata in a request.
-    #[serde(rename="flags")]
+    #[serde(rename = "flags")]
     Flags,
     /// Indicator to retrieve hour-by-hour data over the next two days in a
     /// request.
-    #[serde(rename="hourly")]
+    #[serde(rename = "hourly")]
     Hourly,
     /// Indicator to retrieve minute-by-minute data for the next hour.
-    #[serde(rename="minutely")]
+    #[serde(rename = "minutely")]
     Minutely,
 }
 
@@ -168,94 +168,94 @@ impl Block {
 #[derive(Copy, Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum Language {
     /// Arabic
-    #[serde(rename="ar")]
+    #[serde(rename = "ar")]
     Ar,
     /// Azerbaijani
-    #[serde(rename="az")]
+    #[serde(rename = "az")]
     Az,
     /// Belarusian
-    #[serde(rename="be")]
+    #[serde(rename = "be")]
     Be,
     /// Bosnian
-    #[serde(rename="bs")]
+    #[serde(rename = "bs")]
     Bs,
     /// Czech
-    #[serde(rename="cs")]
+    #[serde(rename = "cs")]
     Cs,
     /// German
-    #[serde(rename="de")]
+    #[serde(rename = "de")]
     De,
     /// Greek
-    #[serde(rename="el")]
+    #[serde(rename = "el")]
     El,
     /// English
-    #[serde(rename="en")]
+    #[serde(rename = "en")]
     En,
     /// Spanish
-    #[serde(rename="es")]
+    #[serde(rename = "es")]
     Es,
     /// French
-    #[serde(rename="fr")]
+    #[serde(rename = "fr")]
     Fr,
     /// Croatian
-    #[serde(rename="hr")]
+    #[serde(rename = "hr")]
     Hr,
     /// Hungarian
-    #[serde(rename="hu")]
+    #[serde(rename = "hu")]
     Hu,
     /// Indonesian
-    #[serde(rename="id")]
+    #[serde(rename = "id")]
     Id,
     /// Italian
-    #[serde(rename="it")]
+    #[serde(rename = "it")]
     It,
     /// Icelandic
-    #[serde(rename="is")]
+    #[serde(rename = "is")]
     Is,
     /// Cornish
-    #[serde(rename="kw")]
+    #[serde(rename = "kw")]
     Kw,
     /// Norwegian Bokmål
-    #[serde(rename="nb")]
+    #[serde(rename = "nb")]
     Nb,
     /// Dutch
-    #[serde(rename="nl")]
+    #[serde(rename = "nl")]
     Nl,
     /// Polish
-    #[serde(rename="pl")]
+    #[serde(rename = "pl")]
     Pl,
     /// Portuguese
-    #[serde(rename="pt")]
+    #[serde(rename = "pt")]
     Pt,
     /// Russian
-    #[serde(rename="ru")]
+    #[serde(rename = "ru")]
     Ru,
     /// Slovak
-    #[serde(rename="sk")]
+    #[serde(rename = "sk")]
     Sk,
     /// Serbian
-    #[serde(rename="sr")]
+    #[serde(rename = "sr")]
     Sr,
     /// Swedish
-    #[serde(rename="sv")]
+    #[serde(rename = "sv")]
     Sv,
     /// Tetum
-    #[serde(rename="tet")]
+    #[serde(rename = "tet")]
     Tet,
     /// Turkish
-    #[serde(rename="tr")]
+    #[serde(rename = "tr")]
     Tr,
     /// Ukrainian
-    #[serde(rename="uk")]
+    #[serde(rename = "uk")]
     Uk,
     /// Igpay Atinlay
-    #[serde(rename="x-pig-latin")]
+    #[serde(rename = "x-pig-latin")]
     XPigLatin,
     /// Simplified Chinese
-    #[serde(rename="zh")]
+    #[serde(rename = "zh")]
     Zh,
     /// Traditional Chinese
-    #[serde(rename="zh-tw")]
+    #[serde(rename = "zh-tw")]
     ZhTw,
 }
 
@@ -313,17 +313,17 @@ impl Language {
 #[derive(Copy, Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum Unit {
     /// Automatically select units based on geographic location.
-    #[serde(rename="auto")]
+    #[serde(rename = "auto")]
     Auto,
     /// Same as [Si][`Unit::Si`], except that [`wind_speed`] is in kilometers
     /// per hour.
     ///
     /// [`wind_speed`]: struct.Datapoint.html#structfield.wind_speed
     /// [`Unit::Si`]: #variant.Si
-    #[serde(rename="ca")]
+    #[serde(rename = "ca")]
     Ca,
     /// Imperial units (the default).
-    #[serde(rename="si")]
+    #[serde(rename = "si")]
     Si,
     /// Same as [Si][`Unit::Si`], except that [`nearest_storm_distance`] and
     /// [`visibility`] are in miles and [`wind_speed`] is in miles per hour.
@@ -332,10 +332,10 @@ pub enum Unit {
     /// [`visibility`]: struct.Datapoint.html#structfield.visibility
     /// [`wind_speed`]: struct.Datapoint.html#structfield.wind_speed
     /// [`Unit::Si`]: #variant.Si
-    #[serde(rename="uk2")]
+    #[serde(rename = "uk2")]
     Uk2,
     /// SI units.
-    #[serde(rename="us")]
+    #[serde(rename = "us")]
     Us,
 }
 

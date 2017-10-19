@@ -19,43 +19,43 @@
 #[derive(Copy, Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum Icon {
     /// The day's sky is clear.
-    #[serde(rename="clear-day")]
+    #[serde(rename = "clear-day")]
     ClearDay,
     /// The night sky is clear.
-    #[serde(rename="clear-night")]
+    #[serde(rename = "clear-night")]
     ClearNight,
     /// The sky is cloudy.
-    #[serde(rename="cloudy")]
+    #[serde(rename = "cloudy")]
     Cloudy,
     /// It is foggy.
-    #[serde(rename="fog")]
+    #[serde(rename = "fog")]
     Fog,
     /// Not actively in use
-    #[serde(rename="hail")]
+    #[serde(rename = "hail")]
     Hail,
     /// The day's sky is partly cloudy.
-    #[serde(rename="partly-cloudy-day")]
+    #[serde(rename = "partly-cloudy-day")]
     PartlyCloudyDay,
     /// The night's sky is partly night.
-    #[serde(rename="partly-cloudy-night")]
+    #[serde(rename = "partly-cloudy-night")]
     PartlyCloudyNight,
     /// The weather is rain.
-    #[serde(rename="rain")]
+    #[serde(rename = "rain")]
     Rain,
     /// The weather is sleet.
-    #[serde(rename="sleet")]
+    #[serde(rename = "sleet")]
     Sleet,
     /// The weather is snow.
-    #[serde(rename="snow")]
+    #[serde(rename = "snow")]
     Snow,
     /// Not actively in use
-    #[serde(rename="thunderstorm")]
+    #[serde(rename = "thunderstorm")]
     Thunderstorm,
     /// Not actively in use
-    #[serde(rename="tornado")]
+    #[serde(rename = "tornado")]
     Tornado,
     /// The weather is windy.
-    #[serde(rename="wind")]
+    #[serde(rename = "wind")]
     Wind,
 }
 
@@ -65,13 +65,13 @@ pub enum Icon {
 #[derive(Copy, Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum PrecipitationType {
     /// Indicator that the type of precipitation is rain.
-    #[serde(rename="rain")]
+    #[serde(rename = "rain")]
     Rain,
     /// Indicator that the type of precipitation is sleet.
-    #[serde(rename="sleet")]
+    #[serde(rename = "sleet")]
     Sleet,
     /// Indicator that the type of precipitation is snow.
-    #[serde(rename="snow")]
+    #[serde(rename = "snow")]
     Snow,
 }
 
@@ -123,7 +123,7 @@ pub struct Datablock {
 /// [`Datablock`]: struct.Datablock.html
 /// [`time`]: #structfield.time
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(rename_all="camelCase")]
+#[serde(rename_all = "camelCase")]
 pub struct Datapoint {
     /// The unix timestamp representing when the daytime high apparent
     /// temperature occurs.
@@ -379,7 +379,7 @@ pub struct Datapoint {
 /// [`Unit`]: enum.Unit.html
 /// [DarkSky]: https://darksky.net
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(rename_all="kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct Flags {
     /// A list of DarkSky stations used for the [`Forecast`].
     ///
