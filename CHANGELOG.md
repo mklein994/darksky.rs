@@ -4,9 +4,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Added methods to get Options' inner HashMap
+- Added a `utils` module containing URI formatting functions
+
 ### Changed
 
 - `API_URL` is now located at `constants::API_URL` and is now a constant
+- Modules are now located in their own publicly exported `models` module
 
 ## [0.6.1] - 2017-09-18
 
