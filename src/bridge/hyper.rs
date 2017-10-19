@@ -15,11 +15,10 @@
 // CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //! Bridged support for the `hyper` library.
 
-use hyper::client::{Client, Response};
-use serde_json;
+use hyper::client::Client;
 use std::collections::HashMap;
 use ::models::Forecast;
-use ::{Options, Result, utils};
+use ::{Options, Result, internal, utils};
 
 /// The trait for implementations to different DarkSky routes.
 pub trait DarkskyHyperRequester {
@@ -128,9 +127,7 @@ impl DarkskyHyperRequester for Client {
         -> Result<Forecast> {
         let uri = utils::uri(token, latitude, longitude);
 
-        let response = self.get(&uri).send()?;
-
-        serde_json::from_reader::<Response, Forecast>(response).map_err(From::from)
+        internal::from_reader(self.get(&uri).send()?)
     }
 
     fn get_forecast_with_options<F>(
@@ -143,8 +140,6 @@ impl DarkskyHyperRequester for Client {
         let options = options(Options(HashMap::new())).0;
         let uri = utils::uri_optioned(token, latitude, longitude, options)?;
 
-        let response = self.get(&uri).send()?;
-
-        serde_json::from_reader::<Response, Forecast>(response).map_err(From::from)
+        internal::from_reader(self.get(&uri).send()?)
     }
 }

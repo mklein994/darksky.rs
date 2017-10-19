@@ -111,6 +111,7 @@ pub mod utils;
 pub mod bridge;
 
 mod error;
+mod internal;
 
 pub use error::{Error, Result};
 
