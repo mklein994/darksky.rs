@@ -13,6 +13,7 @@
 // RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 // CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 // CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+//! A set of models representing data received by the API.
 
 /// A safe representation of the indicated weather. This is useful for matching
 /// and presenting an emoji or other weather symbol or representation.

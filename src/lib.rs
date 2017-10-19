@@ -104,15 +104,14 @@ extern crate serde_json;
 extern crate hyper;
 
 pub mod constants;
+pub mod models;
 
 #[cfg(feature = "hyper")]
 pub mod bridge;
 
 mod error;
-mod models;
 
 pub use error::{Error, Result};
-pub use models::*;
 
 #[cfg(feature = "hyper")]
 pub use bridge::DarkskyHyperRequester;

@@ -20,7 +20,8 @@ use serde_json;
 use std::collections::HashMap;
 use std::fmt::Write;
 use ::constants::API_URL;
-use ::{Forecast, Options, Result};
+use ::models::Forecast;
+use ::{Options, Result};
 
 /// The trait for implementations to different DarkSky routes.
 pub trait DarkskyHyperRequester {
