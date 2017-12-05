@@ -109,7 +109,7 @@ pub mod constants;
 pub mod models;
 pub mod utils;
 
-#[cfg(feature = "hyper")]
+#[cfg(any(feature = "hyper", feature = "reqwest"))]
 pub mod bridge;
 
 mod error;
