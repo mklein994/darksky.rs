@@ -21,16 +21,25 @@ serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
 
+[dependencies.futures]
+optional = true
+version = "~0.1"
+
 [dependencies.hyper]
 optional = true
-version = "0.10"
+version = "~0.11"
+
+[dependencies.hyper-tls]
+optional = true
+version = "~0.1"
 
 [dependencies.reqwest]
 optional = true
 version = "~0.8"
 
 [dev-dependencies]
-hyper-native-tls = "0.2"
+tokio-core = "~0.1"
 
 [features]
-default = ["hyper"]
+default = ["hyper-support"]
+hyper-support = ["futures", "hyper", "hyper-tls"]

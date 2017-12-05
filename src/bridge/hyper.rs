@@ -15,10 +15,14 @@
 // CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //! Bridged support for the `hyper` library.
 
-use hyper::client::Client;
+use futures::{self, Future, Stream, future};
+use hyper::client::{Client, HttpConnector};
+use hyper::{Body, Uri};
+use hyper_tls::HttpsConnector;
 use std::collections::HashMap;
+use std::str::FromStr;
 use ::models::Forecast;
-use ::{Options, Result, internal, utils};
+use ::{Error, Options, internal, utils};
 
 /// The trait for `hyper` implementations to different DarkSky routes.
 pub trait DarkskyHyperRequester {
@@ -28,27 +32,34 @@ pub trait DarkskyHyperRequester {
     ///
     /// ```rust,no_run
     /// extern crate darksky;
+    /// extern crate futures;
     /// extern crate hyper;
-    /// extern crate hyper_native_tls;
+    /// extern crate hyper_tls;
+    /// extern crate tokio_core;
     ///
     /// # use std::error::Error;
     /// #
     /// use darksky::{DarkskyHyperRequester, Block};
-    /// use hyper::net::HttpsConnector;
-    /// use hyper::Client;
-    /// use hyper_native_tls::NativeTlsClient;
+    /// use futures::Future;
+    /// use hyper::client::{Client, HttpConnector};
+    /// use hyper_tls::HttpsConnector;
     /// use std::env;
+    /// use tokio_core::reactor::Core;
     ///
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// let tc = NativeTlsClient::new()?;
-    /// let connector = HttpsConnector::new(tc);
-    /// let client = Client::with_connector(connector);
+    /// let core = Core::new()?;
+    /// let handle = core.handle();
+    ///
+    /// let client = Client::configure()
+    ///     .connector(HttpsConnector::new(4, &handle)?)
+    ///     .build(&handle);
     ///
     /// let token = env::var("FORECAST_TOKEN")?;
     /// let lat = 37.8267;
     /// let long = -122.423;
     ///
-    /// match client.get_forecast(&token, lat, long) {
+    /// // We're waiting in this example, but you shouldn't in your code.
+    /// match client.get_forecast(&token, lat, long).wait() {
     ///     Ok(forecast) => println!("{:?}", forecast),
     ///     Err(why) => println!("Error getting forecast: {:?}", why),
     /// }
@@ -61,7 +72,8 @@ pub trait DarkskyHyperRequester {
     /// ```
     ///
     /// [`Forecast`]: struct.Forecast.html
-    fn get_forecast(&self, token: &str, latitude: f64, longitude: f64) -> Result<Forecast>;
+    fn get_forecast<'a>(&'a self, token: &'a str, latitude: f64, longitude: f64)
+        -> Box<Future<Item = Forecast, Error = Error> + 'a>;
 
     /// Retrieve a [forecast][`Forecast`] for the given latitude and longitude,
     /// setting options where needed. For a full list of options, refer to the
@@ -74,21 +86,27 @@ pub trait DarkskyHyperRequester {
     ///
     /// ```rust,no_run
     /// extern crate darksky;
+    /// extern crate futures;
     /// extern crate hyper;
-    /// extern crate hyper_native_tls;
+    /// extern crate hyper_tls;
+    /// extern crate tokio_core;
     ///
     /// # use std::error::Error;
     /// #
     /// use darksky::{DarkskyHyperRequester, Block};
-    /// use hyper::net::HttpsConnector;
-    /// use hyper::Client;
-    /// use hyper_native_tls::NativeTlsClient;
+    /// use futures::Future;
+    /// use hyper::client::{Client, HttpConnector};
+    /// use hyper_tls::HttpsConnector;
     /// use std::env;
+    /// use tokio_core::reactor::Core;
     ///
     /// # fn try_main() -> Result<(), Box<Error>> {
-    /// let tc = NativeTlsClient::new()?;
-    /// let connector = HttpsConnector::new(tc);
-    /// let client = Client::with_connector(connector);
+    /// let core = Core::new()?;
+    /// let handle = core.handle();
+    ///
+    /// let client = Client::configure()
+    ///     .connector(HttpsConnector::new(4, &handle)?)
+    ///     .build(&handle);
     ///
     /// let token = env::var("FORECAST_TOKEN").expect("forecast token");
     /// let lat = 37.8267;
@@ -98,7 +116,8 @@ pub trait DarkskyHyperRequester {
     ///     .exclude(vec![Block::Minutely])
     ///     .extend_hourly());
     ///
-    /// match req {
+    /// // We're waiting in this example, but you shouldn't in your code.
+    /// match req.wait() {
     ///     Ok(forecast) => println!("{:?}", forecast),
     ///     Err(why) => println!("Error getting forecast: {:?}", why),
     /// }
@@ -113,33 +132,58 @@ pub trait DarkskyHyperRequester {
     /// [`Block::Minutely`]: enum.Block.html#variant.Minutely
     /// [`Forecast`]: struct.Forecast.html
     /// [`Options`]: struct.Options.html
-    fn get_forecast_with_options<F>(
-        &self,
-        token: &str,
-        latitude: f64,
-        longitude: f64,
-        options: F
-    ) -> Result<Forecast> where F: FnOnce(Options) -> Options;
-}
-
-impl DarkskyHyperRequester for Client {
-    fn get_forecast(&self, token: &str, latitude: f64, longitude: f64)
-        -> Result<Forecast> {
-        let uri = utils::uri(token, latitude, longitude);
-
-        internal::from_reader(self.get(&uri).send()?)
-    }
-
-    fn get_forecast_with_options<F>(
-        &self,
-        token: &str,
+    fn get_forecast_with_options<'a, F: FnOnce(Options) -> Options>(
+        &'a self,
+        token: &'a str,
         latitude: f64,
         longitude: f64,
         options: F,
-    ) -> Result<Forecast> where F: FnOnce(Options) -> Options {
-        let options = options(Options(HashMap::new())).0;
-        let uri = utils::uri_optioned(token, latitude, longitude, options)?;
+    ) -> Box<Future<Item = Forecast, Error = Error> + 'a>;
+}
 
-        internal::from_reader(self.get(&uri).send()?)
+impl DarkskyHyperRequester for Client<HttpsConnector<HttpConnector>, Body> {
+    fn get_forecast<'a>(&'a self, token: &'a str, latitude: f64, longitude: f64)
+        -> Box<Future<Item = Forecast, Error = Error> + 'a> {
+        let url = utils::uri(token, latitude, longitude);
+        let uri = match Uri::from_str(&url) {
+            Ok(v) => v,
+            Err(why) => return Box::new(future::err(Error::Uri(why))),
+        };
+
+        Box::new(futures::done(Ok(uri))
+            .and_then(move |uri| {
+                self.get(uri)
+            })
+            .and_then(|res| {
+                res.body().concat2()
+            })
+            .map_err(From::from)
+            .map(internal::from_chunk)
+            .and_then(|x| x))
+    }
+
+    fn get_forecast_with_options<'a, F: FnOnce(Options) -> Options>(
+        &'a self,
+        token: &'a str,
+        latitude: f64,
+        longitude: f64,
+        options: F,
+    ) -> Box<Future<Item = Forecast, Error = Error> + 'a> {
+        let options = options(Options(HashMap::new())).0;
+        let url = match utils::uri_optioned(token, latitude, longitude, options) {
+            Ok(v) => v,
+            Err(why) => return Box::new(future::err(why)),
+        };
+        let uri = match Uri::from_str(&url) {
+            Ok(v) => v,
+            Err(why) => return Box::new(future::err(Error::Uri(why))),
+        };
+
+        Box::new(future::ok(uri)
+            .and_then(move |uri| self.get(uri))
+            .and_then(|res| res.body().concat2())
+            .map_err(From::from)
+            .map(internal::from_chunk)
+            .and_then(|x| x))
     }
 }

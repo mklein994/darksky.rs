@@ -47,27 +47,34 @@
 //!
 //! ```rust,no_run
 //! extern crate darksky;
+//! extern crate futures;
 //! extern crate hyper;
-//! extern crate hyper_native_tls;
+//! extern crate hyper_tls;
+//! extern crate tokio_core;
 //!
 //! # use std::error::Error;
 //! #
 //! use darksky::DarkskyHyperRequester;
-//! use hyper::net::HttpsConnector;
-//! use hyper::Client;
-//! use hyper_native_tls::NativeTlsClient;
+//! use futures::Future;
+//! use hyper::client::{Client, HttpConnector};
+//! use hyper_tls::HttpsConnector;
 //! use std::env;
+//! use tokio_core::reactor::Core;
 //!
 //! # fn try_main() -> Result<(), Box<Error>> {
-//! let tc = NativeTlsClient::new()?;
-//! let connector = HttpsConnector::new(tc);
-//! let client = Client::with_connector(connector);
+//! let core = Core::new()?;
+//! let handle = core.handle();
+//!
+//! let client = Client::configure()
+//!     .connector(HttpsConnector::new(4, &handle)?)
+//!     .build(&handle);
 //!
 //! let token = env::var("FORECAST_TOKEN")?;
 //! let lat = 37.8267;
 //! let long = -122.423;
 //!
-//! match client.get_forecast(&token, lat, long) {
+//! // We're waiting in this example, but you shouldn't in your code.
+//! match client.get_forecast(&token, lat, long).wait() {
 //!     Ok(forecast) => println!("{:?}", forecast),
 //!     Err(why) => println!("Error getting forecast: {:?}", why),
 //! }
@@ -100,8 +107,12 @@
 extern crate serde;
 extern crate serde_json;
 
+#[cfg(feature = "futures")]
+extern crate futures;
 #[cfg(feature = "hyper")]
 extern crate hyper;
+#[cfg(feature = "hyper-tls")]
+extern crate hyper_tls;
 #[cfg(feature = "reqwest")]
 extern crate reqwest;
 
