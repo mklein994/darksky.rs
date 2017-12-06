@@ -16,6 +16,8 @@
 
 use serde::de::DeserializeOwned;
 use serde_json;
+#[cfg(feature = "reqwest")]
+use ::std::io::Read;
 use ::Result;
 
 #[cfg(feature = "hyper")]
