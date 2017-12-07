@@ -31,7 +31,7 @@
 //! Add the following dependency to your `Cargo.toml`:
 //!
 //! ```toml
-//! darksky = "0.6"
+//! darksky = "0.7"
 //! ```
 //!
 //! And include it in your project:
