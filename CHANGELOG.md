@@ -2,13 +2,6 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-
-### Added
-
-- Added methods to get Options' inner HashMap
-- Added a `utils` module containing URI formatting functions
-
 ### [0.7.0] - 2017-12-07
 
 ### Added
@@ -20,7 +13,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - `API_URL` is now located at `constants::API_URL` and is now a constant
+  [c:14c172a]
 - Models are now located in their own publicly exported `models` module
+  [c:819fe80]
 - Modularize HTTP client support [c:8fb8419]
 
 ### Misc.
@@ -112,6 +107,7 @@ data;
 Initial commit.
 
 [c:0cec145]: https://github.com/zeyla/darksky.rs/commit/0cec1452396b658281b47df9548360708c4caa60
+[c:14c172a]: https://github.com/zeyla/darksky.rs/commit/14c172ae6b62b981df030ab2f58b9f5293117809
 [c:1e693e6]: https://github.com/zeyla/darksky.rs/commit/1e693e640bf43eb8157d91b4b66e7f5088bced70
 [c:2353387]: https://github.com/zeyla/darksky.rs/commit/2353387f5c1d3820a4e8c6ccfefb8c49dd216b88
 [c:4d67790]: https://github.com/zeyla/darksky.rs/commit/4d677905b51feaff3e5544cd9004bdb5ba9f90cd
@@ -120,6 +116,7 @@ Initial commit.
 [c:6f49baa]: https://github.com/zeyla/darksky.rs/commit/6f49baa2469d891aee847f6178a853e6ef4ba6b7
 [c:792c151]: https://github.com/zeyla/darksky.rs/commit/792c1518291c77f7c5669ae8bdea3cda084688e5
 [c:7ef66b1]: https://github.com/zeyla/darksky.rs/commit/7ef66b1b8894dbe391cf9f5ce51d7de258726593
+[c:819fe80]: https://github.com/zeyla/darksky.rs/commit/819fe803463427fc7d6cd24eaff14432b2da8f29
 [c:8946cc2]: https://github.com/zeyla/darksky.rs/commit/8946cc2ddaf67e577e62c943f4451b2c9fa9a7a1
 [c:8fb8419]: https://github.com/zeyla/darksky.rs/commit/8fb84190310ec2638a5ab119240b7922bf8a6bc3
 [c:945e86c]: https://github.com/zeyla/darksky.rs/commit/945e86c99735732e3709c2517e8ad36284dcbe59
