@@ -16,9 +16,8 @@
 //! Bridged support for the `hyper` library.
 
 use futures::{Future, Stream, future};
-use hyper::client::{Client, HttpConnector};
-use hyper::{Body, Uri};
-use hyper_tls::HttpsConnector;
+use hyper::client::{Client, Connect};
+use hyper::{Error as HyperError, Uri};
 use std::collections::HashMap;
 use std::str::FromStr;
 use ::models::Forecast;
@@ -146,7 +145,8 @@ pub trait DarkskyHyperRequester {
         where F: FnOnce(Options) -> Options, T: AsRef<str>;
 }
 
-impl DarkskyHyperRequester for Client<HttpsConnector<HttpConnector>, Body> {
+impl<B, C: Connect> DarkskyHyperRequester for Client<C, B>
+    where B: Stream<Error = HyperError> + 'static, B::Item: AsRef<[u8]> {
     fn get_forecast<'a, 'b, T: AsRef<str>>(
         &'a self,
         token: T,
