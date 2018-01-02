@@ -15,7 +15,7 @@
 // CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //! Bridged support for the `hyper` library.
 
-use futures::{self, Future, Stream, future};
+use futures::{Future, Stream, future};
 use hyper::client::{Client, HttpConnector};
 use hyper::{Body, Uri};
 use hyper_tls::HttpsConnector;
@@ -72,8 +72,12 @@ pub trait DarkskyHyperRequester {
     /// ```
     ///
     /// [`Forecast`]: struct.Forecast.html
-    fn get_forecast<'a>(&'a self, token: &'a str, latitude: f64, longitude: f64)
-        -> Box<Future<Item = Forecast, Error = Error> + 'a>;
+    fn get_forecast<'a, 'b, T: AsRef<str>>(
+        &'a self,
+        token: T,
+        latitude: f64,
+        longitude: f64,
+    ) -> Box<Future<Item = Forecast, Error = Error> + 'b>;
 
     /// Retrieve a [forecast][`Forecast`] for the given latitude and longitude,
     /// setting options where needed. For a full list of options, refer to the
@@ -132,45 +136,46 @@ pub trait DarkskyHyperRequester {
     /// [`Block::Minutely`]: enum.Block.html#variant.Minutely
     /// [`Forecast`]: struct.Forecast.html
     /// [`Options`]: struct.Options.html
-    fn get_forecast_with_options<'a, F: FnOnce(Options) -> Options>(
+    fn get_forecast_with_options<'a, 'b, F, T>(
         &'a self,
-        token: &'a str,
+        token: T,
         latitude: f64,
         longitude: f64,
         options: F,
-    ) -> Box<Future<Item = Forecast, Error = Error> + 'a>;
+    ) -> Box<Future<Item = Forecast, Error = Error> + 'b>
+        where F: FnOnce(Options) -> Options, T: AsRef<str>;
 }
 
 impl DarkskyHyperRequester for Client<HttpsConnector<HttpConnector>, Body> {
-    fn get_forecast<'a>(&'a self, token: &'a str, latitude: f64, longitude: f64)
-        -> Box<Future<Item = Forecast, Error = Error> + 'a> {
-        let url = utils::uri(token, latitude, longitude);
+    fn get_forecast<'a, 'b, T: AsRef<str>>(
+        &'a self,
+        token: T,
+        latitude: f64,
+        longitude: f64,
+    ) -> Box<Future<Item = Forecast, Error = Error> + 'b> {
+        let url = utils::uri(token.as_ref(), latitude, longitude);
         let uri = match Uri::from_str(&url) {
             Ok(v) => v,
             Err(why) => return Box::new(future::err(Error::Uri(why))),
         };
 
-        Box::new(futures::done(Ok(uri))
-            .and_then(move |uri| {
-                self.get(uri)
-            })
-            .and_then(|res| {
-                res.body().concat2()
-            })
-            .map_err(From::from)
+        Box::new(self.get(uri)
+            .and_then(|res| res.body().concat2())
+            .from_err()
             .map(internal::from_chunk)
             .and_then(|x| x))
     }
 
-    fn get_forecast_with_options<'a, F: FnOnce(Options) -> Options>(
+    fn get_forecast_with_options<'a, 'b, F, T>(
         &'a self,
-        token: &'a str,
+        token: T,
         latitude: f64,
         longitude: f64,
         options: F,
-    ) -> Box<Future<Item = Forecast, Error = Error> + 'a> {
+    ) -> Box<Future<Item = Forecast, Error = Error> + 'b>
+        where F: FnOnce(Options) -> Options, T: AsRef<str> {
         let options = options(Options(HashMap::new())).0;
-        let url = match utils::uri_optioned(token, latitude, longitude, options) {
+        let url = match utils::uri_optioned(token.as_ref(), latitude, longitude, options) {
             Ok(v) => v,
             Err(why) => return Box::new(future::err(why)),
         };
@@ -179,10 +184,9 @@ impl DarkskyHyperRequester for Client<HttpsConnector<HttpConnector>, Body> {
             Err(why) => return Box::new(future::err(Error::Uri(why))),
         };
 
-        Box::new(future::ok(uri)
-            .and_then(move |uri| self.get(uri))
+        Box::new(self.get(uri)
             .and_then(|res| res.body().concat2())
-            .map_err(From::from)
+            .from_err()
             .map(internal::from_chunk)
             .and_then(|x| x))
     }
