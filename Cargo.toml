@@ -34,6 +34,7 @@ optional = true
 version = "~0.8"
 
 [dev-dependencies]
+hyper-tls = "~0.1"
 tokio-core = "~0.1"
 
 [features]
