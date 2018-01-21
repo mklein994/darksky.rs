@@ -23,7 +23,7 @@ on [crates.io] by the same name.
 Add the following dependency to your `Cargo.toml`:
 
 ```toml
-darksky = "0.7"
+darksky = "0.8"
 ```
 
 And include it in your project:

@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+### [0.8.0] - 2018-01-21
+
+### Added
+
+- Made Hyper bridge trait bounds more generic, allowing any HTTPS connector to
+be used on users' clients
+- Added Time Machine support
+
+### Changed
+
+- Added a `time` argument to `utils::uri_optioned`
+
 ### [0.7.0] - 2017-12-07
 
 ### Added
