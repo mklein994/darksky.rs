@@ -42,9 +42,17 @@ pub fn uri(token: &str, lat: f64, long: f64) -> String {
 /// ```rust
 /// use darksky::{Block, Options, utils};
 ///
-/// let options = Options::default().exclude(vec![Block::Hourly]).into_inner();
-/// let uri = utils::uri_optioned("def", -4.13, 14.32, options).unwrap();
-/// let exp = "https://api.darksky.net/forecast/def/-4.13,14.32?exclude=hourly&";
+/// let options = Options::default()
+///     .exclude(vec![Block::Hourly])
+///     .into_inner();
+/// let uri = utils::uri_optioned(
+///     "def",
+///     -4.13,
+///     14.32,
+///     Some(1_450_000_000.to_string()),
+///     options,
+/// ).unwrap();
+/// let exp = "https://api.darksky.net/forecast/def/-4.13,14.32,1450000000?exclude=hourly&";
 ///
 /// assert_eq!(uri, exp);
 /// ```
@@ -55,6 +63,7 @@ pub fn uri_optioned(
     token: &str,
     lat: f64,
     long: f64,
+    time: Option<String>,
     options: HashMap<&'static str, String>,
 ) -> Result<String> {
     let mut uri = String::new();
@@ -65,6 +74,12 @@ pub fn uri_optioned(
     write!(uri, "{}", lat)?;
     uri.push(',');
     write!(uri, "{}", long)?;
+
+    if let Some(time) = time {
+        uri.push(',');
+        write!(uri, "{}", time)?;
+    }
+
     uri.push('?');
 
     for (k, v) in options {

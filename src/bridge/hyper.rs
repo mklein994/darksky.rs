@@ -19,6 +19,7 @@ use futures::{Future, Stream, future};
 use hyper::client::{Client, Connect};
 use hyper::{Error as HyperError, Uri};
 use std::collections::HashMap;
+use std::fmt::Display;
 use std::str::FromStr;
 use ::models::Forecast;
 use ::{Error, Options, internal, utils};
@@ -143,6 +144,40 @@ pub trait DarkskyHyperRequester {
         options: F,
     ) -> Box<Future<Item = Forecast, Error = Error> + 'b>
         where F: FnOnce(Options) -> Options, T: AsRef<str>;
+
+    /// Sets the time to request a forecast for by using DarkSky's Time Machine
+    /// API.
+    ///
+    /// This accepts either a Unix timestamp or a string in the format of
+    /// `[YYYY]-[MM]-[DD]T[HH]:[MM]:[SS][timezone`, where `timezone` should
+    /// either be:
+    ///
+    /// - omitted (referring to the local time for the location being
+    /// requested);
+    /// - `Z` referring to GMT time;
+    /// - or `-[HH][MM]` for an offset from GMT in hours and minutes.
+    ///
+    /// The timezone is only used for determining the time of the request. The
+    /// response will always be relative to the local time zone.
+    ///
+    /// Refer to DarkSky's documentation on
+    /// [Time Machine Request Parameters][docs]for information.
+    ///
+    /// This function accepts anything that implements the `Display` trait, so
+    /// you should validate data beforehand. This is to avoid implementing a
+    /// time validation scheme, while avoiding locking the parameter type to
+    /// that of a time library (e.g. Chrono).
+    ///
+    /// [docs]: https://darksky.net/dev/docs#time-machine-request-parameters
+    fn get_forecast_time_machine<D, F, T>(
+        &self,
+        token: T,
+        latitude: f64,
+        longitude: f64,
+        time: D,
+        options: F,
+    ) -> Box<Future<Item = Forecast, Error = Error>>
+        where D: Display, F: FnOnce(Options) -> Options, T: AsRef<str>;
 }
 
 impl<B, C: Connect> DarkskyHyperRequester for Client<C, B>
@@ -175,7 +210,14 @@ impl<B, C: Connect> DarkskyHyperRequester for Client<C, B>
     ) -> Box<Future<Item = Forecast, Error = Error> + 'b>
         where F: FnOnce(Options) -> Options, T: AsRef<str> {
         let options = options(Options(HashMap::new())).0;
-        let url = match utils::uri_optioned(token.as_ref(), latitude, longitude, options) {
+        let constructed = utils::uri_optioned(
+            token.as_ref(),
+            latitude,
+            longitude,
+            None,
+            options,
+        );
+        let url = match constructed {
             Ok(v) => v,
             Err(why) => return Box::new(future::err(why)),
         };
@@ -190,4 +232,55 @@ impl<B, C: Connect> DarkskyHyperRequester for Client<C, B>
             .map(internal::from_chunk)
             .and_then(|x| x))
     }
+
+    fn get_forecast_time_machine<D, F, T>(
+        &self,
+        token: T,
+        latitude: f64,
+        longitude: f64,
+        time: D,
+        options: F,
+    ) -> Box<Future<Item = Forecast, Error = Error>>
+        where D: Display, F: FnOnce(Options) -> Options, T: AsRef<str> {
+        let time = time.to_string();
+
+        forecast_optioned(self, token, latitude, longitude, Some(time), options)
+    }
+}
+
+fn forecast_optioned<B, C, F, T>(
+    client: &Client<C, B>,
+    token: T,
+    latitude: f64,
+    longitude: f64,
+    time: Option<String>,
+    options: F,
+) -> Box<Future<Item = Forecast, Error = Error>>
+    where B: Stream<Error = HyperError> + 'static,
+          B::Item: AsRef<[u8]>,
+          C: Connect,
+          F: FnOnce(Options) -> Options,
+          T: AsRef<str> {
+    let options = options(Options(HashMap::new())).0;
+    let constructed = utils::uri_optioned(
+        token.as_ref(),
+        latitude,
+        longitude,
+        time,
+        options,
+    );
+    let url = match constructed {
+        Ok(v) => v,
+        Err(why) => return Box::new(future::err(why)),
+    };
+    let uri = match Uri::from_str(&url) {
+        Ok(v) => v,
+        Err(why) => return Box::new(future::err(Error::Uri(why))),
+    };
+
+    Box::new(client.get(uri)
+        .and_then(|res| res.body().concat2())
+        .from_err()
+        .map(internal::from_chunk)
+        .and_then(|x| x))
 }

@@ -10,7 +10,9 @@
 
 # darksky.rs
 
-An unofficial Rust wrapper for the [DarkSky] API.
+An unofficial Rust wrapper for the [DarkSky] API, supporting regular forecast
+requests, Time Machine requests, and the full set of reqest parameters and
+options.
 
 **Note**: This package was previously named `forecast_io`. Due to a
 [change in name], this package has been renamed to `darksky`, and can be found

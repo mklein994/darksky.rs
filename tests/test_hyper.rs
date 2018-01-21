@@ -12,7 +12,8 @@ use futures::{Future, future};
 use hyper::client::HttpConnector;
 use hyper::{Body, Client};
 use hyper_tls::HttpsConnector;
-use std::env;
+use std::time::Duration;
+use std::{env, thread};
 use tokio_core::reactor::{Core, Handle};
 
 #[inline]
@@ -72,6 +73,37 @@ fn test_get_forecast_with_options() {
 
 		Err(())
 	});
+
+	core.run(done).expect("core err");
+}
+
+#[ignore]
+#[test]
+fn test_time_machine() {
+	let token = env::var("FORECAST_TOKEN").expect("forecast token");
+
+	let mut core = Core::new().unwrap();
+	let client = client(&core.handle());
+
+	let done = client.get_forecast_time_machine(
+		&token[..],
+		19.2465,
+		-99.1013,
+		1_450_000_000,
+		|opt| opt
+			.exclude(vec![Block::Currently, Block::Daily])
+			.extend_hourly()
+			.language(Language::Es)
+			.unit(Unit::Si))
+		.map(|forecast| {
+			assert!(true);
+
+			()
+		}).map_err(|why| {
+			panic!("{:?}", why);
+
+			()
+		});
 
 	core.run(done).expect("core err");
 }

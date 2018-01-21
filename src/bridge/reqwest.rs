@@ -22,6 +22,7 @@
 //! [`DarkskyReqwestRequester`]: trait.DarkskyReqwestRequester.html
 
 use reqwest::Client;
+use std::fmt::Display;
 use ::models::Forecast;
 use ::{Options, Result, internal, utils};
 
@@ -115,6 +116,39 @@ pub trait DarkskyReqwestRequester {
         longitude: f64,
         options: F,
     ) -> Result<Forecast> where F: FnOnce(Options) -> Options;
+
+    /// Sets the time to request a forecast for by using DarkSky's Time Machine
+    /// API.
+    ///
+    /// This accepts either a Unix timestamp or a string in the format of
+    /// `[YYYY]-[MM]-[DD]T[HH]:[MM]:[SS][timezone`, where `timezone` should
+    /// either be:
+    ///
+    /// - omitted (referring to the local time for the location being
+    /// requested);
+    /// - `Z` referring to GMT time;
+    /// - or `-[HH][MM]` for an offset from GMT in hours and minutes.
+    ///
+    /// The timezone is only used for determining the time of the request. The
+    /// response will always be relative to the local time zone.
+    ///
+    /// Refer to DarkSky's documentation on
+    /// [Time Machine Request Parameters][docs]for information.
+    ///
+    /// This function accepts anything that implements the `Display` trait, so
+    /// you should validate data beforehand. This is to avoid implementing a
+    /// time validation scheme, while avoiding locking the parameter type to
+    /// that of a time library (e.g. Chrono).
+    ///
+    /// [docs]: https://darksky.net/dev/docs#time-machine-request-parameters
+    fn get_forecast_time_machine<D, F>(
+        &self,
+        token: &str,
+        latitude: f64,
+        longitude: f64,
+        time: D,
+        options: F,
+    ) -> Result<Forecast> where D: Display, F: FnOnce(Options) -> Options;
 }
 
 impl DarkskyReqwestRequester for Client {
@@ -133,7 +167,33 @@ impl DarkskyReqwestRequester for Client {
         options: F,
     ) -> Result<Forecast> where F: FnOnce(Options) -> Options {
         let options = options(Options::default()).0;
-        let uri = utils::uri_optioned(token, latitude, longitude, options)?;
+        let uri = utils::uri_optioned(
+            token,
+            latitude,
+            longitude,
+            None,
+            options,
+        )?;
+
+        internal::from_reader(self.get(&uri).send()?)
+    }
+
+    fn get_forecast_time_machine<D, F>(
+        &self,
+        token: &str,
+        latitude: f64,
+        longitude: f64,
+        time: D,
+        options: F,
+    ) -> Result<Forecast> where D: Display, F: FnOnce(Options) -> Options {
+        let options = options(Options::default()).0;
+        let uri = utils::uri_optioned(
+            token,
+            latitude,
+            longitude,
+            Some(time.to_string()),
+            options,
+        )?;
 
         internal::from_reader(self.get(&uri).send()?)
     }
