@@ -76,6 +76,19 @@ pub enum PrecipitationType {
     Snow,
 }
 
+/// The severity of the weather alert.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all="lowercase")]
+pub enum Severity {
+    /// An individual should be aware of potentially severe weather.
+    Advisory,
+    /// An individual should prepare for potentially severe weather
+    Watch,
+    /// An individual should take immediate action to protect themselves and others from
+    /// potentially severe weather.
+    Warning,
+}
+
 /// A textual, expiring severe weather warning issued for a location. There may
 /// be multiple alerts per [`Forecast`].
 ///
@@ -85,13 +98,19 @@ pub struct Alert {
     /// [Unix timestamp][unixtime] of when the alert expires.
     ///
     /// [unixtime]: https://en.wikipedia.org/wiki/Unix_time
-    pub expires: Option<u64>,
+    pub expires: u64,
     /// A detailed description of the alert.
     pub description: String,
     /// A short text summary.
     pub title: String,
     /// A URI that contains detailed information about the alert.
     pub uri: String,
+    /// An array of strings representing the names of the regions covered by this weather alert.
+    pub regions: Vec<String>,
+    /// The UNIX time at which the alert was issued.
+    pub time: u64,
+    /// The severity of the weather alert.
+    pub severity: Severity,
 }
 
 /// A block of data within a [`Forecast`], with potentially many [`Datapoint`]s.
