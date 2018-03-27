@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+### [0.8.1] - 2018-03-27
+
+### Added
+
+- Add new alert fields, fix `Alert::expires` type ([@mklein994]) [c:d686641]
+
 ### [0.8.0] - 2018-01-21
 
 ### Added
@@ -136,6 +142,7 @@ Initial commit.
 [c:a7b6438]: https://github.com/zeyla/darksky.rs/commit/a7b6438ee7fe663c9bf33e62c3bcb6117926779c
 [c:aedafd9]: https://github.com/zeyla/darksky.rs/commit/aedafd9fce4d45280518e3f8f209a837ecacdc4f
 [c:bbe3a1d]: https://github.com/zeyla/darksky.rs/commit/bbe3a1d41cea96bd923d8fe2e685c114c25fc314
+[c:d686641]: https://github.com/zeyla/darksky.rs/commit/d68664191f657eb616cc0241f4f4502649233650
 [c:ef39b9f]: https://github.com/zeyla/darksky.rs/commit/ef39b9f9d34110ded507f93ef01290ba6e4aece4
 [c:f5b0269]: https://github.com/zeyla/darksky.rs/commit/f5b0269b6fe0cf0643f942893368436ef14b6b68
 
@@ -143,6 +150,8 @@ Initial commit.
 [@rparrett]: https://github.com/rparrett
 [@sb89]: https://github.com/sb89
 
+[0.8.1]: https://github.com/zeyla/darksky.rs/compare/v0.8.0...v0.8.1
+[0.8.0]: https://github.com/zeyla/darksky.rs/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/zeyla/darksky.rs/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/zeyla/darksky.rs/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/zeyla/darksky.rs/compare/v0.5.0...v0.6.0
