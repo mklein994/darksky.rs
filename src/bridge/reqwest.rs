@@ -21,10 +21,10 @@
 //!
 //! [`DarkskyReqwestRequester`]: trait.DarkskyReqwestRequester.html
 
+use models::Forecast;
 use reqwest::Client;
 use std::fmt::Display;
-use ::models::Forecast;
-use ::{Options, Result, internal, utils};
+use {internal, utils, Options, Result};
 
 /// The trait for `reqwest` implementations to different DarkSky routes.
 pub trait DarkskyReqwestRequester {
@@ -64,8 +64,7 @@ pub trait DarkskyReqwestRequester {
     ///
     /// [`Block::Minutely`]: ../enum.Block.html#variant.Minutely
     /// [`Forecast`]: ../models/struct.Forecast.html
-    fn get_forecast(&self, token: &str, latitude: f64, longitude: f64)
-        -> Result<Forecast>;
+    fn get_forecast(&self, token: &str, latitude: f64, longitude: f64) -> Result<Forecast>;
 
     /// Retrieve a [`Forecast`] for the given latitude and longitude, setting
     /// options where needed. For a full list of options, refer to the
@@ -115,7 +114,9 @@ pub trait DarkskyReqwestRequester {
         latitude: f64,
         longitude: f64,
         options: F,
-    ) -> Result<Forecast> where F: FnOnce(Options) -> Options;
+    ) -> Result<Forecast>
+    where
+        F: FnOnce(Options) -> Options;
 
     /// Sets the time to request a forecast for by using DarkSky's Time Machine
     /// API.
@@ -148,12 +149,14 @@ pub trait DarkskyReqwestRequester {
         longitude: f64,
         time: D,
         options: F,
-    ) -> Result<Forecast> where D: Display, F: FnOnce(Options) -> Options;
+    ) -> Result<Forecast>
+    where
+        D: Display,
+        F: FnOnce(Options) -> Options;
 }
 
 impl DarkskyReqwestRequester for Client {
-    fn get_forecast(&self, token: &str, latitude: f64, longitude: f64)
-        -> Result<Forecast> {
+    fn get_forecast(&self, token: &str, latitude: f64, longitude: f64) -> Result<Forecast> {
         let uri = utils::uri(token, latitude, longitude);
 
         internal::from_reader(self.get(&uri).send()?)
@@ -165,15 +168,12 @@ impl DarkskyReqwestRequester for Client {
         latitude: f64,
         longitude: f64,
         options: F,
-    ) -> Result<Forecast> where F: FnOnce(Options) -> Options {
+    ) -> Result<Forecast>
+    where
+        F: FnOnce(Options) -> Options,
+    {
         let options = options(Options::default()).0;
-        let uri = utils::uri_optioned(
-            token,
-            latitude,
-            longitude,
-            None,
-            options,
-        )?;
+        let uri = utils::uri_optioned(token, latitude, longitude, None, options)?;
 
         internal::from_reader(self.get(&uri).send()?)
     }
@@ -185,15 +185,13 @@ impl DarkskyReqwestRequester for Client {
         longitude: f64,
         time: D,
         options: F,
-    ) -> Result<Forecast> where D: Display, F: FnOnce(Options) -> Options {
+    ) -> Result<Forecast>
+    where
+        D: Display,
+        F: FnOnce(Options) -> Options,
+    {
         let options = options(Options::default()).0;
-        let uri = utils::uri_optioned(
-            token,
-            latitude,
-            longitude,
-            Some(time.to_string()),
-            options,
-        )?;
+        let uri = utils::uri_optioned(token, latitude, longitude, Some(time.to_string()), options)?;
 
         internal::from_reader(self.get(&uri).send()?)
     }

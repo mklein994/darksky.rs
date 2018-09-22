@@ -15,14 +15,17 @@
 // CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //! Bridged support for the `hyper` library.
 
-use futures::{Future, Stream, future};
-use hyper::client::{Client, Connect};
+use futures::{future, Future, Stream};
+use hyper::{
+    body::Payload,
+    client::{connect::Connect, Client},
+};
 use hyper::{Error as HyperError, Uri};
+use models::Forecast;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::str::FromStr;
-use ::models::Forecast;
-use ::{Error, Options, internal, utils};
+use {internal, utils, Error, Options};
 
 /// The trait for `hyper` implementations to different DarkSky routes.
 pub trait DarkskyHyperRequester {
@@ -41,18 +44,15 @@ pub trait DarkskyHyperRequester {
     /// #
     /// use darksky::{DarkskyHyperRequester, Block};
     /// use futures::Future;
-    /// use hyper::client::{Client, HttpConnector};
+    /// use hyper::{Body, client::{Client, HttpConnector}};
     /// use hyper_tls::HttpsConnector;
     /// use std::env;
     /// use tokio_core::reactor::Core;
     ///
     /// # fn try_main() -> Result<(), Box<Error>> {
     /// let core = Core::new()?;
-    /// let handle = core.handle();
-    ///
-    /// let client = Client::configure()
-    ///     .connector(HttpsConnector::new(4, &handle)?)
-    ///     .build(&handle);
+    /// let client = Client::builder()
+    ///     .build::<_, Body>(HttpsConnector::new(4).unwrap());
     ///
     /// let token = env::var("FORECAST_TOKEN")?;
     /// let lat = 37.8267;
@@ -99,18 +99,16 @@ pub trait DarkskyHyperRequester {
     /// #
     /// use darksky::{DarkskyHyperRequester, Block};
     /// use futures::Future;
-    /// use hyper::client::{Client, HttpConnector};
+    /// use hyper::{Body, client::{Client, HttpConnector}};
     /// use hyper_tls::HttpsConnector;
     /// use std::env;
     /// use tokio_core::reactor::Core;
     ///
     /// # fn try_main() -> Result<(), Box<Error>> {
     /// let core = Core::new()?;
-    /// let handle = core.handle();
     ///
-    /// let client = Client::configure()
-    ///     .connector(HttpsConnector::new(4, &handle)?)
-    ///     .build(&handle);
+    /// let client = Client::builder()
+    ///     .build::<_, Body>(HttpsConnector::new(4).unwrap());
     ///
     /// let token = env::var("FORECAST_TOKEN").expect("forecast token");
     /// let lat = 37.8267;
@@ -143,7 +141,9 @@ pub trait DarkskyHyperRequester {
         longitude: f64,
         options: F,
     ) -> Box<Future<Item = Forecast, Error = Error> + 'b>
-        where F: FnOnce(Options) -> Options, T: AsRef<str>;
+    where
+        F: FnOnce(Options) -> Options,
+        T: AsRef<str>;
 
     /// Sets the time to request a forecast for by using DarkSky's Time Machine
     /// API.
@@ -177,11 +177,21 @@ pub trait DarkskyHyperRequester {
         time: D,
         options: F,
     ) -> Box<Future<Item = Forecast, Error = Error>>
-        where D: Display, F: FnOnce(Options) -> Options, T: AsRef<str>;
+    where
+        D: Display,
+        F: FnOnce(Options) -> Options,
+        T: AsRef<str>;
 }
 
-impl<B, C: Connect> DarkskyHyperRequester for Client<C, B>
-    where B: Stream<Error = HyperError> + 'static, B::Item: AsRef<[u8]> {
+impl<B, C> DarkskyHyperRequester for Client<C, B>
+where
+    C: Connect + Sync + 'static,
+    C::Transport: 'static,
+    C::Future: 'static,
+    B: Payload + Send + 'static + Default + Stream<Error = HyperError>,
+    B::Data: Send,
+    B::Item: AsRef<[u8]>,
+{
     fn get_forecast<'a, 'b, T: AsRef<str>>(
         &'a self,
         token: T,
@@ -194,11 +204,13 @@ impl<B, C: Connect> DarkskyHyperRequester for Client<C, B>
             Err(why) => return Box::new(future::err(Error::Uri(why))),
         };
 
-        Box::new(self.get(uri)
-            .and_then(|res| res.body().concat2())
-            .from_err()
-            .map(internal::from_chunk)
-            .and_then(|x| x))
+        Box::new(
+            self.get(uri)
+                .and_then(|res| res.into_body().concat2())
+                .from_err()
+                .map(internal::from_chunk)
+                .and_then(|x| x),
+        )
     }
 
     fn get_forecast_with_options<'a, 'b, F, T>(
@@ -208,15 +220,12 @@ impl<B, C: Connect> DarkskyHyperRequester for Client<C, B>
         longitude: f64,
         options: F,
     ) -> Box<Future<Item = Forecast, Error = Error> + 'b>
-        where F: FnOnce(Options) -> Options, T: AsRef<str> {
+    where
+        F: FnOnce(Options) -> Options,
+        T: AsRef<str>,
+    {
         let options = options(Options(HashMap::new())).0;
-        let constructed = utils::uri_optioned(
-            token.as_ref(),
-            latitude,
-            longitude,
-            None,
-            options,
-        );
+        let constructed = utils::uri_optioned(token.as_ref(), latitude, longitude, None, options);
         let url = match constructed {
             Ok(v) => v,
             Err(why) => return Box::new(future::err(why)),
@@ -226,11 +235,13 @@ impl<B, C: Connect> DarkskyHyperRequester for Client<C, B>
             Err(why) => return Box::new(future::err(Error::Uri(why))),
         };
 
-        Box::new(self.get(uri)
-            .and_then(|res| res.body().concat2())
-            .from_err()
-            .map(internal::from_chunk)
-            .and_then(|x| x))
+        Box::new(
+            self.get(uri)
+                .and_then(|res| res.into_body().concat2())
+                .from_err()
+                .map(internal::from_chunk)
+                .and_then(|x| x),
+        )
     }
 
     fn get_forecast_time_machine<D, F, T>(
@@ -241,7 +252,11 @@ impl<B, C: Connect> DarkskyHyperRequester for Client<C, B>
         time: D,
         options: F,
     ) -> Box<Future<Item = Forecast, Error = Error>>
-        where D: Display, F: FnOnce(Options) -> Options, T: AsRef<str> {
+    where
+        D: Display,
+        F: FnOnce(Options) -> Options,
+        T: AsRef<str>,
+    {
         let time = time.to_string();
 
         forecast_optioned(self, token, latitude, longitude, Some(time), options)
@@ -256,19 +271,15 @@ fn forecast_optioned<B, C, F, T>(
     time: Option<String>,
     options: F,
 ) -> Box<Future<Item = Forecast, Error = Error>>
-    where B: Stream<Error = HyperError> + 'static,
-          B::Item: AsRef<[u8]>,
-          C: Connect,
-          F: FnOnce(Options) -> Options,
-          T: AsRef<str> {
+where
+    B: Payload + Send + 'static + Default + Stream<Error = HyperError>,
+    B::Item: AsRef<[u8]>,
+    C: Connect + 'static,
+    F: FnOnce(Options) -> Options,
+    T: AsRef<str>,
+{
     let options = options(Options(HashMap::new())).0;
-    let constructed = utils::uri_optioned(
-        token.as_ref(),
-        latitude,
-        longitude,
-        time,
-        options,
-    );
+    let constructed = utils::uri_optioned(token.as_ref(), latitude, longitude, time, options);
     let url = match constructed {
         Ok(v) => v,
         Err(why) => return Box::new(future::err(why)),
@@ -278,9 +289,12 @@ fn forecast_optioned<B, C, F, T>(
         Err(why) => return Box::new(future::err(Error::Uri(why))),
     };
 
-    Box::new(client.get(uri)
-        .and_then(|res| res.body().concat2())
-        .from_err()
-        .map(internal::from_chunk)
-        .and_then(|x| x))
+    Box::new(
+        client
+            .get(uri)
+            .and_then(|res| res.into_body().concat2())
+            .from_err()
+            .map(internal::from_chunk)
+            .and_then(|x| x),
+    )
 }

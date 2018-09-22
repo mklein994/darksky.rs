@@ -56,7 +56,7 @@
 //! #
 //! use darksky::DarkskyHyperRequester;
 //! use futures::Future;
-//! use hyper::client::{Client, HttpConnector};
+//! use hyper::{Body, client::{Client, HttpConnector}};
 //! use hyper_tls::HttpsConnector;
 //! use std::env;
 //! use tokio_core::reactor::Core;
@@ -65,9 +65,8 @@
 //! let core = Core::new()?;
 //! let handle = core.handle();
 //!
-//! let client = Client::configure()
-//!     .connector(HttpsConnector::new(4, &handle)?)
-//!     .build(&handle);
+//! let client = Client::builder()
+//!     .build::<_, Body>(HttpsConnector::new(4).unwrap());
 //!
 //! let token = env::var("FORECAST_TOKEN")?;
 //! let lat = 37.8267;
@@ -102,13 +101,16 @@
 #![cfg_attr(feature = "cargo-clippy", allow(doc_markdown))]
 #![deny(missing_docs)]
 
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate serde_derive;
 
 extern crate serde;
 extern crate serde_json;
 
 #[cfg(feature = "futures")]
 extern crate futures;
+#[cfg(feature = "hyper")]
+extern crate http;
 #[cfg(feature = "hyper")]
 extern crate hyper;
 #[cfg(feature = "reqwest")]

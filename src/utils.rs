@@ -1,10 +1,10 @@
 //! Utilities that provide some basic functionality that may be useful, but are
 //! generally non-essential for usage of the library.
 
+use constants::API_URL;
 use std::collections::HashMap;
 use std::fmt::Write;
-use ::constants::API_URL;
-use ::Result;
+use Result;
 
 /// Formats a URI for retrieving a forecast without options.
 ///

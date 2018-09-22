@@ -17,15 +17,18 @@
 use serde::de::DeserializeOwned;
 use serde_json;
 #[cfg(feature = "reqwest")]
-use ::std::io::Read;
-use ::Result;
+use std::io::Read;
+use Result;
 
 #[cfg(feature = "hyper")]
 use hyper::Chunk;
 
 #[cfg(feature = "reqwest")]
 pub fn from_reader<R, T>(reader: R) -> Result<T>
-    where R: Read, T: DeserializeOwned {
+where
+    R: Read,
+    T: DeserializeOwned,
+{
     serde_json::from_reader(reader).map_err(From::from)
 }
 

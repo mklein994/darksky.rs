@@ -16,12 +16,14 @@
 
 use serde_json::{Error as JsonError, Value};
 use std::error::Error as StdError;
-use std::fmt::{Display, Formatter, Error as FmtError, Result as FmtResult};
+use std::fmt::{Display, Error as FmtError, Formatter, Result as FmtResult};
 use std::io::Error as IoError;
 use std::result::Result as StdResult;
 
 #[cfg(feature = "hyper")]
-use hyper::error::{Error as HyperError, UriError};
+use http::uri::InvalidUri;
+#[cfg(feature = "hyper")]
+use hyper::error::Error as HyperError;
 #[cfg(feature = "reqwest")]
 use reqwest::Error as ReqwestError;
 
@@ -34,77 +36,77 @@ pub type Result<T> = StdResult<T, Error>;
 /// [`Result`]: type.Result.html
 #[derive(Debug)]
 pub enum Error {
-	/// A json decoding error, with a description and the value. This occurs
-	/// when the received value type is not of the expected type.
-	Decode(&'static str, Value),
-	/// A `std::fmt` error
-	Fmt(FmtError),
-	/// A `hyper` crate error
-	#[cfg(feature = "hyper")]
-	Hyper(HyperError),
-	/// A `serde_json` crate error
-	Json(JsonError),
-	/// A `std::io` module error
-	Io(IoError),
-	#[cfg(feature = "reqwest")]
-	/// A `reqwest` crate error
-	Reqwest(ReqwestError),
-	/// An error while parsing a URI.
-	#[cfg(feature = "hyper")]
-	Uri(UriError),
+    /// A json decoding error, with a description and the value. This occurs
+    /// when the received value type is not of the expected type.
+    Decode(&'static str, Value),
+    /// A `std::fmt` error
+    Fmt(FmtError),
+    /// A `hyper` crate error
+    #[cfg(feature = "hyper")]
+    Hyper(HyperError),
+    /// A `serde_json` crate error
+    Json(JsonError),
+    /// A `std::io` module error
+    Io(IoError),
+    #[cfg(feature = "reqwest")]
+    /// A `reqwest` crate error
+    Reqwest(ReqwestError),
+    /// An error while parsing a URI.
+    #[cfg(feature = "hyper")]
+    Uri(InvalidUri),
 }
 
 impl From<FmtError> for Error {
-	fn from(err: FmtError) -> Error {
-		Error::Fmt(err)
-	}
+    fn from(err: FmtError) -> Error {
+        Error::Fmt(err)
+    }
 }
 
 #[cfg(feature = "hyper")]
 impl From<HyperError> for Error {
-	fn from(err: HyperError) -> Error {
-		Error::Hyper(err)
-	}
+    fn from(err: HyperError) -> Error {
+        Error::Hyper(err)
+    }
 }
 
 impl From<IoError> for Error {
-	fn from(err: IoError) -> Error {
-		Error::Io(err)
-	}
+    fn from(err: IoError) -> Error {
+        Error::Io(err)
+    }
 }
 
 impl From<JsonError> for Error {
-	fn from(err: JsonError) -> Error {
-		Error::Json(err)
-	}
+    fn from(err: JsonError) -> Error {
+        Error::Json(err)
+    }
 }
 
 #[cfg(feature = "reqwest")]
 impl From<ReqwestError> for Error {
-	fn from(err: ReqwestError) -> Error {
-		Error::Reqwest(err)
-	}
+    fn from(err: ReqwestError) -> Error {
+        Error::Reqwest(err)
+    }
 }
 
 impl Display for Error {
-	fn fmt(&self, f: &mut Formatter) -> FmtResult {
-		f.write_str(self.description())
-	}
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        f.write_str(self.description())
+    }
 }
 
 impl StdError for Error {
-	fn description(&self) -> &str {
-		match *self {
-			Error::Decode(msg, _) => msg,
-			Error::Fmt(ref inner) => inner.description(),
-			#[cfg(feature = "hyper")]
-			Error::Hyper(ref inner) => inner.description(),
-			Error::Json(ref inner) => inner.description(),
-			Error::Io(ref inner) => inner.description(),
-			#[cfg(feature = "reqwest")]
-			Error::Reqwest(ref inner) => inner.description(),
-			#[cfg(feature = "hyper")]
-			Error::Uri(ref inner) => inner.description(),
-		}
-	}
+    fn description(&self) -> &str {
+        match *self {
+            Error::Decode(msg, _) => msg,
+            Error::Fmt(ref inner) => inner.description(),
+            #[cfg(feature = "hyper")]
+            Error::Hyper(ref inner) => inner.description(),
+            Error::Json(ref inner) => inner.description(),
+            Error::Io(ref inner) => inner.description(),
+            #[cfg(feature = "reqwest")]
+            Error::Reqwest(ref inner) => inner.description(),
+            #[cfg(feature = "hyper")]
+            Error::Uri(ref inner) => inner.description(),
+        }
+    }
 }

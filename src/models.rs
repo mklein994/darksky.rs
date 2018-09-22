@@ -78,7 +78,7 @@ pub enum PrecipitationType {
 
 /// The severity of the weather alert.
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(rename_all="lowercase")]
+#[serde(rename_all = "lowercase")]
 pub enum Severity {
     /// An individual should be aware of potentially severe weather.
     Advisory,
