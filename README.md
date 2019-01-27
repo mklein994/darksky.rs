@@ -1,5 +1,5 @@
-[travis-badge]: https://img.shields.io/travis/zeyla/darksky.rs.svg?style=flat-square
-[travis]: https://travis-ci.org/rusty-crate/darksky.rs
+[travis-badge]: https://img.shields.io/travis/rusty-crates/darksky.rs.svg?style=flat-square
+[travis]: https://travis-ci.org/rusty-crates/darksky.rs
 [license-badge]: https://img.shields.io/badge/license-ISC-blue.svg?style=flat-square
 [license]: https://opensource.org/licenses/ISC
 [docs-badge]: https://img.shields.io/badge/docs-online-2020ff.svg?style=flat-square
