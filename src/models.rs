@@ -396,7 +396,7 @@ pub struct Datapoint {
 /// A set of flags for a forecast, such as the [`Unit`]s specified or the vector
 /// of [DarkSky] stations reporting.
 ///
-/// [`Unit`]: enum.Unit.html
+/// [`Unit`]: ../enum.Unit.html
 /// [DarkSky]: https://darksky.net
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -429,19 +429,33 @@ pub struct Flags {
     pub sources: Option<Vec<String>>,
     /// The [`Unit`]s used to format the data.
     ///
-    /// [`Unit`]: enum.Unit.html
+    /// [`Unit`]: ../enum.Unit.html
     pub units: Option<String>,
 }
 
-/// A full forecast returned from the [`get_forecast`] and
-/// [`get_forecast_with_options`] functions.
+/// A full forecast returned from the `get_forecast` and
+/// `get_forecast_with_options` functions.
+///
+/// The functions for hyper: [`get_forecast`][hyper `get_forecast`] and
+/// [`get_forecast_with_options`][hyper `get_forecast_with_options`].
+///
+/// And for reqwest: [`get_forecast`][hyper `get_forecast`] and
+/// [`get_forecast_with_options`][hyper `get_forecast_with_options`].
 ///
 /// Most of the fields are optional, due to being able to be excluded via the
 /// [`Options`] builder.
 ///
-/// [`Options`]: struct.Options.html
-/// [`get_forecast`]: fn.get_forecast.html
-/// [`get_forecast_with_options`]: fn.get_forecast_with_options.html
+/// [`Options`]: ../struct.Options.html
+/// [hyper `get_forecast`]:
+///   ../bridge/hyper/trait.DarkskyHyperRequester.html#tymethod.get_forecast
+/// [reqwest `get_forecast`]:
+///   ../bridge/reqwest/trait.DarkskyReqwestRequester.html#tymethod.get_forecast
+/// [hyper `get_forecast_with_options`]:
+///   ../bridge/hyper/trait.DarkskyHyperRequester.html#tymethod.get_forecast_with_options
+/// [reqwest `get_forecast_with_options`]:
+///   ../bridge/reqwest/trait.DarkskyReqwestRequester.html#tymethod.get_forecast_with_options
+/// [docs]: https://darksky.net/dev/docs/forecast
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Forecast {
     /// Contains any severe weather alerts pertinent to the location.
@@ -452,36 +466,36 @@ pub struct Forecast {
     /// This may be excluded by passing the [`Block::Currently`] variant to
     /// [`Options::exclude`].
     ///
-    /// [`Block::Currently`]: enum.Block.html#variant.Currently
+    /// [`Block::Currently`]: ../enum.Block.html#variant.Currently
     /// [`Datablock`]: struct.Datablock.html
-    /// [`Options::exclude`]: struct.Options.html#method.exclude
+    /// [`Options::exclude`]: ../struct.Options.html#method.exclude
     pub currently: Option<Datapoint>,
     /// Daily [`Datablock`]s within a forecast.
     ///
     /// This may be excluded by passing the [`Block::Daily`] variant to
     /// [`Options::exclude`].
     ///
-    /// [`Block::Daily`]: enum.Block.html#variant.Daily
+    /// [`Block::Daily`]: ../enum.Block.html#variant.Daily
     /// [`Datablock`]: struct.Datablock.html
-    /// [`Options::exclude`]: struct.Options.html#method.exclude
+    /// [`Options::exclude`]: ../struct.Options.html#method.exclude
     pub daily: Option<Datablock>,
     /// A set of flags returned from the API.
     ///
     /// This may be excluded by passing the [`Block::Flags`] variant to
     /// [`Options::exclude`].
     ///
-    /// [`Block::Flags`]: enum.Block.html#variant.Flags
+    /// [`Block::Flags`]: ../enum.Block.html#variant.Flags
     /// [`Datablock`]: struct.Datablock.html
-    /// [`Options::exclude`]: struct.Options.html#method.exclude
+    /// [`Options::exclude`]: ../struct.Options.html#method.exclude
     pub flags: Option<Flags>,
     /// Hourly [`Datablock`]s within a forecast.
     ///
     /// This may be excluded by passing the [`Block::Hourly`] variant to
     /// [`Options::exclude`].
     ///
-    /// [`Block::Hourly`]: enum.Block.html#variant.Hourly
+    /// [`Block::Hourly`]: ../enum.Block.html#variant.Hourly
     /// [`Datablock`]: struct.Datablock.html
-    /// [`Options::exclude`]: struct.Options.html#method.exclude
+    /// [`Options::exclude`]: ../struct.Options.html#method.exclude
     pub hourly: Option<Datablock>,
     /// The latitude of the forecast's location.
     pub latitude: f64,
@@ -492,9 +506,9 @@ pub struct Forecast {
     /// This may be excluded by passing the [`Block::Minutely`] variant to
     /// [`Options::exclude`].
     ///
-    /// [`Block::Minutely`]: enum.Block.html#variant.Minutely
+    /// [`Block::Minutely`]: ../enum.Block.html#variant.Minutely
     /// [`Datablock`]: struct.Datablock.html
-    /// [`Options::exclude`]: struct.Options.html#method.exclude
+    /// [`Options::exclude`]: ../struct.Options.html#method.exclude
     pub minutely: Option<Datablock>,
     /// The timezone offset of the forecast, relative to the UTC timezone.
     pub offset: Option<f64>,

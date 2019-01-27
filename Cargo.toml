@@ -34,3 +34,6 @@ tokio-core = "0.1.17"
 [features]
 default = ["hyper-support"]
 hyper-support = ["futures", "hyper", "http"]
+
+[package.metadata.docs.rs]
+all-features = true

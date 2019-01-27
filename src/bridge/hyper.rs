@@ -71,7 +71,7 @@ pub trait DarkskyHyperRequester {
     /// # }
     /// ```
     ///
-    /// [`Forecast`]: struct.Forecast.html
+    /// [`Forecast`]: ../../models/struct.Forecast.html
     fn get_forecast<'a, 'b, T: AsRef<str>>(
         &'a self,
         token: T,
@@ -131,9 +131,9 @@ pub trait DarkskyHyperRequester {
     /// # }
     /// ```
     ///
-    /// [`Block::Minutely`]: enum.Block.html#variant.Minutely
-    /// [`Forecast`]: struct.Forecast.html
-    /// [`Options`]: struct.Options.html
+    /// [`Block::Minutely`]: ../../enum.Block.html#variant.Minutely
+    /// [`Forecast`]: ../../models/struct.Forecast.html
+    /// [`Options`]: ../../struct.Options.html
     fn get_forecast_with_options<'a, 'b, F, T>(
         &'a self,
         token: T,

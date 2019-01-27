@@ -1,5 +1,5 @@
 [travis-badge]: https://img.shields.io/travis/zeyla/darksky.rs.svg?style=flat-square
-[travis]: https://travis-ci.org/zeyla/darksky.rs
+[travis]: https://travis-ci.org/rusty-crate/darksky.rs
 [license-badge]: https://img.shields.io/badge/license-ISC-blue.svg?style=flat-square
 [license]: https://opensource.org/licenses/ISC
 [docs-badge]: https://img.shields.io/badge/docs-online-2020ff.svg?style=flat-square
@@ -45,4 +45,4 @@ License info can be found in the [LICENSE.md] file. Long story short, ISC.
 [change in name]: http://status.darksky.net/2016/09/20/forecast-api-is-now-dark-sky-api.html
 [crates.io]: https://crates.io/crates/darksky
 [DarkSky]: https://darksky.net
-[LICENSE.md]: https://gitlab.com/zeyla/darksky.rs/blob/master/LICENSE.md
+[LICENSE.md]: https://github.com/rusty-crates/darksky.rs/blob/master/LICENSE.md

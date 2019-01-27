@@ -62,8 +62,8 @@ pub trait DarkskyReqwestRequester {
     /// # }
     /// ```
     ///
-    /// [`Block::Minutely`]: ../enum.Block.html#variant.Minutely
-    /// [`Forecast`]: ../models/struct.Forecast.html
+    /// [`Block::Minutely`]: ../../enum.Block.html#variant.Minutely
+    /// [`Forecast`]: ../../models/struct.Forecast.html
     fn get_forecast(&self, token: &str, latitude: f64, longitude: f64) -> Result<Forecast>;
 
     /// Retrieve a [`Forecast`] for the given latitude and longitude, setting
@@ -105,9 +105,9 @@ pub trait DarkskyReqwestRequester {
     /// # }
     /// ```
     ///
-    /// [`Block::Minutely`]: ../enum.Block.html#variant.Minutely
-    /// [`Forecast`]: ../models/struct.Forecast.html
-    /// [`Options`]: ../struct.Options.html
+    /// [`Block::Minutely`]: ../../enum.Block.html#variant.Minutely
+    /// [`Forecast`]: ../../models/struct.Forecast.html
+    /// [`Options`]: ../../struct.Options.html
     fn get_forecast_with_options<F>(
         &self,
         token: &str,

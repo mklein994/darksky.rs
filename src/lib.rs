@@ -87,11 +87,15 @@
 //!
 //! ### Features
 //!
-//! **hyper**: Enables an implementation of [`DarkskyRequester`] on hyper's
+//! **hyper**: Enables an implementation of [`DarkskyHyperRequester`] on hyper's
 //! `Client` (enabled by default).
 //!
-//! [`DarkskyRequester`]: trait.DarkskyRequester.html
-//! [`Forecast`]: struct.Forecast.html
+//! **reqwest**: Enables an implementation of [`DarkskyReqwestRequester`] on
+//! reqwest's `Client`.
+//!
+//! [`DarkskyHyperRequester`]: bridge/hyper/trait.DarkskyHyperRequester.html
+//! [`DarkskyReqwestRequester`]: bridge/reqwest/trait.DarkskyReqwestRequester.html
+//! [`Forecast`]: models/struct.Forecast.html
 //! [DarkSky]: https://darksky.net
 //! [change in name]: http://status.darksky.net/2016/09/20/forecast-api-is-now-dark-sky-api.html
 //! [crates.io]: https://crates.io
@@ -138,7 +142,7 @@ use std::collections::HashMap;
 /// A block is a name of a [`Datablock`] returned from the API. This can be used
 /// to exclude datablocks from being returned from the API, to reduce bandwidth.
 ///
-/// [`Datablock`]: struct.Datablock.html
+/// [`Datablock`]: models/struct.Datablock.html
 #[derive(Copy, Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum Block {
     /// Indicator to retrieve the current weather in a request.
@@ -179,7 +183,7 @@ impl Block {
 /// English is not required.
 ///
 /// [`Language::En`]: #variant.En
-/// [`summary`]: struct.Datapoint.html#structfield.summary
+/// [`summary`]: models/struct.Datapoint.html#structfield.summary
 #[derive(Copy, Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum Language {
     /// Arabic
@@ -320,10 +324,16 @@ impl Language {
 /// [documentation][docs].
 ///
 /// Used in conjunction with the [`Options::unit`] method, which is a builder
-/// for an argument of [`get_forecast_with_options`].
+/// for an argument of `get_forecast_with_options`, which exists on both, the
+/// hyper client [`get_forecast_with_options`][hyper `get_forecast_with_options`]
+/// and on the reqwest client
+/// [`get_forecast_with_options`][reqwest `get_forecast_with_options`].
 ///
 /// [`Options::unit`]: struct.Options.html#method.unit
-/// [`get_forecast_with_options`]: fn.get_forecast_with_options.html
+/// [hyper `get_forecast_with_options`]:
+///   bridge/hyper/trait.DarkskyHyperRequester.html#tymethod.get_forecast_with_options
+/// [reqwest `get_forecast_with_options`]:
+///   bridge/reqwest/trait.DarkskyReqwestRequester.html#tymethod.get_forecast_with_options
 /// [docs]: https://darksky.net/dev/docs/forecast
 #[derive(Copy, Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize)]
 pub enum Unit {
@@ -333,23 +343,23 @@ pub enum Unit {
     /// Same as [Si][`Unit::Si`], except that [`wind_speed`] is in kilometers
     /// per hour.
     ///
-    /// [`wind_speed`]: struct.Datapoint.html#structfield.wind_speed
+    /// [`wind_speed`]: models/struct.Datapoint.html#structfield.wind_speed
     /// [`Unit::Si`]: #variant.Si
     #[serde(rename = "ca")]
     Ca,
-    /// Imperial units (the default).
+    /// Si units.
     #[serde(rename = "si")]
     Si,
     /// Same as [Si][`Unit::Si`], except that [`nearest_storm_distance`] and
     /// [`visibility`] are in miles and [`wind_speed`] is in miles per hour.
     ///
-    /// [`nearest_storm_distance`]: struct.Datapoint.html#structfield.nearest_storm_distance
-    /// [`visibility`]: struct.Datapoint.html#structfield.visibility
-    /// [`wind_speed`]: struct.Datapoint.html#structfield.wind_speed
+    /// [`nearest_storm_distance`]: models/struct.Datapoint.html#structfield.nearest_storm_distance
+    /// [`visibility`]: models/struct.Datapoint.html#structfield.visibility
+    /// [`wind_speed`]: models/struct.Datapoint.html#structfield.wind_speed
     /// [`Unit::Si`]: #variant.Si
     #[serde(rename = "uk2")]
     Uk2,
-    /// SI units.
+    /// Imperial units (the default).
     #[serde(rename = "us")]
     Us,
 }
@@ -374,16 +384,23 @@ impl Unit {
 /// [forecast][`Forecast`], and the [language][`Language`] for the
 /// [summary][`Datapoint::summary`].
 ///
-/// Refer to the documentation for [`get_forecast_with_options`] on how to use
+/// Refer to the documentation for `get_forecast_with_options` on how to use
 /// this.
+/// The documentation for the hyper client can be found here:
+/// [`get_forecast_with_options`][hyper `get_forecast_with_options`], and for
+/// the reqwest client here:
+/// [`get_forecast_with_options`][reqwest `get_forecast_with_options`]
 ///
 /// [`Block`]: enum.Block.html
-/// [`Datapoint::summary`]: struct.Datapoint.html#structfield.summary
-/// [`Forecast`]: struct.Forecast.html
+/// [`Datapoint::summary`]: models/struct.Datapoint.html#structfield.summary
+/// [`Forecast`]: models/struct.Forecast.html
 /// [`Language`]: enum.Language.html
 /// [`Options::extend_hourly`]: struct.Options.html#method.extend_hourly
 /// [`Unit`]: enum.Unit.html
-/// [`get_forecast_with_options`]: fn.get_forecast_with_options.html
+/// [hyper `get_forecast_with_options`]:
+///   bridge/hyper/trait.DarkskyHyperRequester.html#tymethod.get_forecast_with_options
+/// [reqwest `get_forecast_with_options`]:
+///   bridge/reqwest/trait.DarkskyReqwestRequester.html#tymethod.get_forecast_with_options
 #[derive(Clone, Debug, Default)]
 pub struct Options(HashMap<&'static str, String>);
 
@@ -392,7 +409,7 @@ impl Options {
     /// datablocks to exclude, refer to [`Block`].
     ///
     /// [`Block`]: enum.Block.html
-    /// [`Datablock`]: struct.Datablock.html
+    /// [`Datablock`]: models/struct.Datablock.html
     pub fn exclude(mut self, blocks: Vec<Block>) -> Self {
         let block_names = blocks.iter().map(|b| b.name()).collect::<Vec<_>>();
 
@@ -406,7 +423,7 @@ impl Options {
     /// Extends the hourly [forecast][`Forecast`] to the full `7` days ahead,
     /// rather than only the first `2` days.
     ///
-    /// [`Forecast`]: struct.Forecast.html
+    /// [`Forecast`]: models/struct.Forecast.html
     pub fn extend_hourly(mut self) -> Self {
         self.0.insert("extend", "hourly".to_owned());
 
@@ -466,7 +483,7 @@ impl Options {
 
     /// Set the language of the [`summary`] provided.
     ///
-    /// [`summary`]: struct.Datapoint.html#structfield.summary
+    /// [`summary`]: models/struct.Datapoint.html#structfield.summary
     pub fn language(mut self, language: Language) -> Self {
         self.0.insert("lang", language.name().to_owned());
 
