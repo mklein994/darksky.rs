@@ -22,7 +22,7 @@
 //! [`DarkskyReqwestRequester`]: trait.DarkskyReqwestRequester.html
 
 use models::Forecast;
-use reqwest::Client;
+use reqwest::blocking::Client;
 use std::fmt::Display;
 use {internal, utils, Options, Result};
 
@@ -40,9 +40,9 @@ pub trait DarkskyReqwestRequester {
     ///
     /// # use std::error::Error;
     /// #
-    /// # fn try_main() -> Result<(), Box<Error>> {
+    /// # fn try_main() -> Result<(), Box<dyn Error>> {
     /// use darksky::DarkskyReqwestRequester;
-    /// use reqwest::Client;
+    /// use reqwest::blocking::Client;
     /// use std::env;
     ///
     /// let token = env::var("FORECAST_TOKEN")?;
@@ -82,9 +82,9 @@ pub trait DarkskyReqwestRequester {
     ///
     /// # use std::error::Error;
     /// #
-    /// # fn try_main() -> Result<(), Box<Error>> {
+    /// # fn try_main() -> Result<(), Box<dyn Error>> {
     /// use darksky::{Block, DarkskyReqwestRequester};
-    /// use reqwest::Client;
+    /// use reqwest::blocking::Client;
     /// use std::env;
     ///
     /// let token = env::var("FORECAST_TOKEN")?;
