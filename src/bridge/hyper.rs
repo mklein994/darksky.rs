@@ -77,7 +77,7 @@ pub trait DarkskyHyperRequester {
         token: T,
         latitude: f64,
         longitude: f64,
-    ) -> Box<Future<Item = Forecast, Error = Error> + 'b>;
+    ) -> Box<dyn Future<Item = Forecast, Error = Error> + 'b>;
 
     /// Retrieve a [forecast][`Forecast`] for the given latitude and longitude,
     /// setting options where needed. For a full list of options, refer to the
@@ -140,7 +140,7 @@ pub trait DarkskyHyperRequester {
         latitude: f64,
         longitude: f64,
         options: F,
-    ) -> Box<Future<Item = Forecast, Error = Error> + 'b>
+    ) -> Box<dyn Future<Item = Forecast, Error = Error> + 'b>
     where
         F: FnOnce(Options) -> Options,
         T: AsRef<str>;
@@ -176,7 +176,7 @@ pub trait DarkskyHyperRequester {
         longitude: f64,
         time: D,
         options: F,
-    ) -> Box<Future<Item = Forecast, Error = Error>>
+    ) -> Box<dyn Future<Item = Forecast, Error = Error>>
     where
         D: Display,
         F: FnOnce(Options) -> Options,
@@ -197,7 +197,7 @@ where
         token: T,
         latitude: f64,
         longitude: f64,
-    ) -> Box<Future<Item = Forecast, Error = Error> + 'b> {
+    ) -> Box<dyn Future<Item = Forecast, Error = Error> + 'b> {
         let url = utils::uri(token.as_ref(), latitude, longitude);
         let uri = match Uri::from_str(&url) {
             Ok(v) => v,
@@ -219,7 +219,7 @@ where
         latitude: f64,
         longitude: f64,
         options: F,
-    ) -> Box<Future<Item = Forecast, Error = Error> + 'b>
+    ) -> Box<dyn Future<Item = Forecast, Error = Error> + 'b>
     where
         F: FnOnce(Options) -> Options,
         T: AsRef<str>,
@@ -251,7 +251,7 @@ where
         longitude: f64,
         time: D,
         options: F,
-    ) -> Box<Future<Item = Forecast, Error = Error>>
+    ) -> Box<dyn Future<Item = Forecast, Error = Error>>
     where
         D: Display,
         F: FnOnce(Options) -> Options,
@@ -270,7 +270,7 @@ fn forecast_optioned<B, C, F, T>(
     longitude: f64,
     time: Option<String>,
     options: F,
-) -> Box<Future<Item = Forecast, Error = Error>>
+) -> Box<dyn Future<Item = Forecast, Error = Error>>
 where
     B: Payload + Send + 'static + Default + Stream<Error = HyperError>,
     B::Item: AsRef<[u8]>,
