@@ -90,23 +90,8 @@ impl From<ReqwestError> for Error {
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        f.write_str(self.description())
+        write!(f, "{}", self)
     }
 }
 
-impl StdError for Error {
-    fn description(&self) -> &str {
-        match *self {
-            Error::Decode(msg, _) => msg,
-            Error::Fmt(ref inner) => inner.description(),
-            #[cfg(feature = "hyper")]
-            Error::Hyper(ref inner) => inner.description(),
-            Error::Json(ref inner) => inner.description(),
-            Error::Io(ref inner) => inner.description(),
-            #[cfg(feature = "reqwest")]
-            Error::Reqwest(ref inner) => inner.description(),
-            #[cfg(feature = "hyper")]
-            Error::Uri(ref inner) => inner.description(),
-        }
-    }
-}
+impl StdError for Error {}
